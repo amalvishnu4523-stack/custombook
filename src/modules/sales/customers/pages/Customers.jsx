@@ -1,18 +1,19 @@
 import { useState } from 'react'
+import { useNavigate } from 'react-router-dom'
 import DataTable from '../../../../shared/components/table/DataTable'
 
 const SAMPLE = [
-  { id: 1, name: 'Amal Vishnu',    email: 'amal@example.com',   phone: '9876543210', receivables: 12000, status: 'Active' },
-  { id: 2, name: 'Priya Nair',     email: 'priya@example.com',  phone: '9123456780', receivables: 5500,  status: 'Active' },
-  { id: 3, name: 'Rahul Menon',    email: 'rahul@example.com',  phone: '9001234567', receivables: 0,     status: 'Inactive' },
-  { id: 4, name: 'Sneha Thomas',   email: 'sneha@example.com',  phone: '9988776655', receivables: 3200,  status: 'Active' },
-  { id: 5, name: 'Kiran Kumar',    email: 'kiran@example.com',  phone: '9871234560', receivables: 8900,  status: 'Active' },
+  { id: 1, name: 'Amal Vishnu',  email: 'amal@example.com',   phone: '9876543210', receivables: 12000, status: 'Active'   },
+  { id: 2, name: 'Priya Nair',   email: 'priya@example.com',  phone: '9123456780', receivables: 5500,  status: 'Active'   },
+  { id: 3, name: 'Rahul Menon',  email: 'rahul@example.com',  phone: '9001234567', receivables: 0,     status: 'Inactive' },
+  { id: 4, name: 'Sneha Thomas', email: 'sneha@example.com',  phone: '9988776655', receivables: 3200,  status: 'Active'   },
+  { id: 5, name: 'Kiran Kumar',  email: 'kiran@example.com',  phone: '9871234560', receivables: 8900,  status: 'Active'   },
 ]
 
 const COLUMNS = [
-  { key: 'name',         header: 'Customer Name',    minWidth: 180 },
-  { key: 'email',        header: 'Email',             minWidth: 200 },
-  { key: 'phone',        header: 'Phone',             minWidth: 140 },
+  { key: 'name',  header: 'Customer Name', minWidth: 180 },
+  { key: 'email', header: 'Email',         minWidth: 200 },
+  { key: 'phone', header: 'Phone',         minWidth: 140 },
   {
     key: 'receivables',
     header: 'Receivables (₹)',
@@ -34,6 +35,7 @@ const COLUMNS = [
 
 function Customers() {
   const [selected, setSelected] = useState([])
+  const navigate = useNavigate()
 
   return (
     <DataTable
@@ -42,7 +44,8 @@ function Customers() {
       data={SAMPLE}
       rowKey="id"
       newButtonText="New Customer"
-      onNew={() => {}}
+      onNew={() => navigate('/sales/customers/new')}
+      onRowClick={(row) => navigate(`/sales/customers/${row.id}`)}
       showSearch={false}
       showFilter={false}
       selectable

@@ -1,7 +1,6 @@
 import { useState } from 'react'
+import { useNavigate } from 'react-router-dom'
 import DataTable from '../../../shared/components/table/DataTable'
-import Drawer from '../../../shared/components/ui/Drawer'
-import CreateNewItem from '../components/CreateNewItem'
 
 const SAMPLE_ITEMS = [
   { id: 1, name: 'Wireless Mouse',      sku: 'WM-001', type: 'Goods',   unit: 'pcs', salesPrice: 799,  purchasePrice: 500,  stock: 120 },
@@ -34,56 +33,31 @@ const COLUMNS = [
   },
   {
     key: 'stock', header: 'Stock', minWidth: 100, align: 'right',
-    render: (val) => val != null ? val : '—',
+    render: (val) => val != null ? val : '—', 
   },
 ]
 
 function Items() {
-  const [items, setItems]           = useState(SAMPLE_ITEMS)
   const [selectedRows, setSelected] = useState([])
-  const [drawerOpen, setDrawerOpen] = useState(false)
-
-  function handleSelectAll() {
-    setSelected(selectedRows.length === items.length ? [] : items.map(r => r.id))
-  }
-
-  function handleSelectRow(key) {
-    setSelected(prev => prev.includes(key) ? prev.filter(k => k !== key) : [...prev, key])
-  }
-
-  function handleSaveItem(newItem) {
-    setItems(prev => [...prev, newItem])
-  }
+  const navigate = useNavigate()
 
   return (
-    <>
-      <DataTable
-        title="Items"
-        columns={COLUMNS}
-        data={items}
-        rowKey="id"
-        showSearch={false}
-        showFilter={false}
-        newButtonText="New Item"
-        onNew={() => setDrawerOpen(true)}
-        selectable
-        selectedRows={selectedRows}
-        onSelectAll={handleSelectAll}
-        onSelectRow={handleSelectRow}
-        emptyMessage="No items found"
-      />
-
-      <Drawer
-        isOpen={drawerOpen}
-        onClose={() => setDrawerOpen(false)}
-        title="New Item"
-      >
-        <CreateNewItem
-          onClose={() => setDrawerOpen(false)}
-          onSave={handleSaveItem}
-        />
-      </Drawer>
-    </>
+    <DataTable
+      title="Items"
+      columns={COLUMNS}
+      data={SAMPLE_ITEMS}
+      rowKey="id"
+      showSearch={false}
+      showFilter={false}
+      newButtonText="New Item" 
+      onNew={() => navigate('/items/new')}
+      onRowClick={(row) => navigate(`/items/${row.id}`)} 
+      selectable
+      selectedRows={selectedRows}
+      onSelectAll={() => setSelected(selectedRows.length === SAMPLE_ITEMS.length ? [] : SAMPLE_ITEMS.map(r => r.id))}
+      onSelectRow={(key) => setSelected(prev => prev.includes(key) ? prev.filter(k => k !== key) : [...prev, key])}
+      emptyMessage="No items found"
+    />
   )
 }
 

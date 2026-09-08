@@ -24,9 +24,9 @@ export default function Header() {
     <header className="flex h-14 w-full items-center justify-between border-b  bg-primary text-slate-200">
       
       {/* Left Section: Logo — same width as sidebar (w-64), white bg */}
-      <div className="flex h-full w-64 shrink-0 items-center justify-center  bg-[#f3f6fd]">
+      {/* <div className="flex h-full w-64 shrink-0 items-center justify-center  bg-[#f3f6fd]">
         <img src="/techgeum_logo2.png" alt="Techgeum" className="h-full w-45 object-cover" />
-      </div>
+      </div> */}
 
       {/* Middle Section: Recent History & Search Bar */}
       <div className="flex flex-1 items-center space-x-3 px-6">

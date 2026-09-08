@@ -1,4 +1,5 @@
 import { useState } from 'react'
+import { useNavigate } from 'react-router-dom'
 import DataTable from '../../../../shared/components/table/DataTable'
 
 const SAMPLE = [
@@ -31,6 +32,7 @@ const COLUMNS = [
 
 function Quotes() {
   const [selected, setSelected] = useState([])
+  const navigate = useNavigate()
 
   return (
     <DataTable
@@ -39,7 +41,8 @@ function Quotes() {
       data={SAMPLE}
       rowKey="id"
       newButtonText="New Quote"
-      onNew={() => {}}
+      onNew={() => navigate('/sales/quotes/new')}
+      onRowClick={(row) => navigate(`/sales/quotes/${row.id}/edit`)}
       showSearch={false}
       showFilter={false}
       selectable
