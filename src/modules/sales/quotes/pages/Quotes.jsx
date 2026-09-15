@@ -42,7 +42,7 @@ function Quotes() {
       rowKey="id"
       newButtonText="New Quote"
       onNew={() => navigate('/sales/quotes/new')}
-      onRowClick={(row) => navigate(`/sales/quotes/${row.id}/edit`)}
+      onRowClick={(row) => navigate(`/sales/quotes/${row.id}`)}
       showSearch={false}
       showFilter={false}
       selectable

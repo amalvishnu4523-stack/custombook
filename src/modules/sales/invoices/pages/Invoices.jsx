@@ -1,12 +1,13 @@
 import { useState } from 'react'
+import { useNavigate } from 'react-router-dom'
 import DataTable from '../../../../shared/components/table/DataTable'
 
 const SAMPLE = [
-  { id: 1, number: 'INV-001', customer: 'Amal Vishnu',  date: '2026-08-01', due: '2026-08-16', amount: 18000, balance: 18000, status: 'Unpaid' },
-  { id: 2, number: 'INV-002', customer: 'Priya Nair',   date: '2026-08-03', due: '2026-08-18', amount: 9500,  balance: 0,     status: 'Paid' },
+  { id: 1, number: 'INV-001', customer: 'Amal Vishnu',  date: '2026-08-01', due: '2026-08-16', amount: 18000, balance: 18000, status: 'Unpaid'  },
+  { id: 2, number: 'INV-002', customer: 'Priya Nair',   date: '2026-08-03', due: '2026-08-18', amount: 9500,  balance: 0,     status: 'Paid'    },
   { id: 3, number: 'INV-003', customer: 'Kiran Kumar',  date: '2026-08-08', due: '2026-08-23', amount: 27000, balance: 12000, status: 'Partial' },
   { id: 4, number: 'INV-004', customer: 'Rahul Menon',  date: '2026-07-20', due: '2026-08-04', amount: 4400,  balance: 4400,  status: 'Overdue' },
-  { id: 5, number: 'INV-005', customer: 'Sneha Thomas', date: '2026-08-15', due: '2026-08-30', amount: 33000, balance: 33000, status: 'Unpaid' },
+  { id: 5, number: 'INV-005', customer: 'Sneha Thomas', date: '2026-08-15', due: '2026-08-30', amount: 33000, balance: 33000, status: 'Unpaid'  },
 ]
 
 const STATUS_STYLES = {
@@ -33,6 +34,7 @@ const COLUMNS = [
 
 function Invoices() {
   const [selected, setSelected] = useState([])
+  const navigate = useNavigate()
 
   return (
     <DataTable
@@ -42,6 +44,7 @@ function Invoices() {
       rowKey="id"
       newButtonText="New Invoice"
       onNew={() => {}}
+      onRowClick={(row) => navigate(`/sales/invoices/${row.id}`)}
       showSearch={false}
       showFilter={false}
       selectable

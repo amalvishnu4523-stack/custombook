@@ -15,8 +15,7 @@ export const sidebarNavItems = [
   {
     name: 'Items', icon: Package, path: '/items', hasSubmenu: true,
     submenu: [
-      { name: 'Items',          path: '/items' },
-      { name: 'Price Lists',    path: '/items/price-lists' },
+      { name: 'Items', path: '/items' },
     ],
   },
   {

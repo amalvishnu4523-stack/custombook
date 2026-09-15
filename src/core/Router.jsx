@@ -20,7 +20,10 @@ import CustomerForm from '../modules/sales/customers/pages/CustomerForm'
 import CustomerDetail from '../modules/sales/customers/pages/CustomerDetail'
 import Quotes from '../modules/sales/quotes/pages/Quotes'
 import QuotesForm from '../modules/sales/quotes/pages/QuotesForm'
+import QuotesDetails from '../modules/sales/quotes/pages/QuotesDetails'
 import SalesOrders from '../modules/sales/sales-orders/pages/SalesOrders'
+import SalesOrderForm from '../modules/sales/sales-orders/pages/SalesOrderForm'
+import SalesOrderDetails from '../modules/sales/sales-orders/pages/SalesOrderDetails'
 import Invoices from '../modules/sales/invoices/pages/Invoices'
 import RecurringInvoices from '../modules/sales/recurring-invoices/pages/RecurringInvoices'
 import DeliveryChallans from '../modules/sales/delivery-challans/pages/DeliveryChallans'
@@ -59,7 +62,11 @@ const router = createBrowserRouter([
           { path: 'sales/quotes',             element: <Quotes /> },
           { path: 'sales/quotes/new',         element: <QuotesForm /> },
           { path: 'sales/quotes/:id/edit',    element: <QuotesForm /> },
+          { path: 'sales/quotes/:id',         element: <QuotesDetails /> },
           { path: 'sales/orders',             element: <SalesOrders /> },
+          { path: 'sales/orders/new',         element: <SalesOrderForm /> },
+          { path: 'sales/orders/:id/edit',    element: <SalesOrderForm /> },
+          { path: 'sales/orders/:id',         element: <SalesOrderDetails /> },
           { path: 'sales/invoices',           element: <Invoices /> },
           { path: 'sales/recurring-invoices', element: <RecurringInvoices /> },
           { path: 'sales/delivery-challans',  element: <DeliveryChallans /> },
