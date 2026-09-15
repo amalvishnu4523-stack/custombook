@@ -1,17 +1,14 @@
 import { useState, useRef } from 'react'
 import { useNavigate, useParams } from 'react-router-dom'
-import {
-  Search, Settings, Plus, ChevronDown, Upload,
-  RefreshCw, HelpCircle, GripVertical, Trash2, ScanLine, FileText, X,
-} from 'lucide-react'
-import { SAMPLE_INVOICES } from './InvoiceDetails'
+import { Search, Plus, ChevronDown, RefreshCw, HelpCircle, GripVertical, Trash2, X, Pencil } from 'lucide-react'
+import { SAMPLE_RECURRING } from './RecurringInvoiceDetails'
 
 /* ── Constants ── */
-const CUSTOMERS     = ['Amal Vishnu', 'Priya Nair', 'Rahul Menon', 'Sneha Thomas', 'Kiran Kumar']
-const SALESPERSONS  = ['Amal Vishnu', 'Priya Nair']
-const PAYMENT_TERMS = ['Due on Receipt', 'Net 15', 'Net 30', 'Net 45', 'Net 60']
-const AR_ACCOUNTS   = ['Accounts Receivable', 'Trade Receivables', 'Other Receivables']
-const TAXES         = ['', 'GST 5%', 'GST 12%', 'GST 18%', 'GST 28%']
+const CUSTOMERS    = ['Amal Vishnu', 'Priya Nair', 'Rahul Menon', 'Sneha Thomas', 'Kiran Kumar']
+const SALESPERSONS = ['Amal Vishnu', 'Priya Nair']
+const REPEAT_OPTIONS = ['Day', 'Week', 'Month', 'Year']
+const PAYMENT_TERMS  = ['Due on Receipt', 'Net 15', 'Net 30', 'Net 45', 'Net 60']
+const TAXES          = ['', 'GST 5%', 'GST 12%', 'GST 18%', 'GST 28%']
 
 /* ── Styles ── */
 const inputCls  = 'w-full rounded border border-gray-300 px-3 py-2 text-sm outline-none transition focus:border-blue-500 focus:ring-1 focus:ring-blue-100'
@@ -39,49 +36,40 @@ function FieldRow({ label, required, hint, children }) {
 
 const EMPTY_ITEM = () => ({ id: Date.now(), details: '', qty: 1, rate: 0 })
 
-function InvoiceForm() {
-  const navigate  = useNavigate()
-  const { id }    = useParams()
-  const isEdit    = !!id
-  const existing  = isEdit ? SAMPLE_INVOICES?.find(i => String(i.id) === String(id)) : null
-  const fileRef   = useRef()
+function RecurringInvoiceForm() {
+  const navigate = useNavigate()
+  const { id }   = useParams()
+  const isEdit   = !!id
+  const existing = isEdit ? SAMPLE_RECURRING?.find(r => String(r.id) === String(id)) : null
 
-  const today = new Date().toISOString().split('T')[0]
+  const today   = new Date().toLocaleDateString('en-GB', { day:'2-digit', month:'2-digit', year:'numeric' }).split('/').join('/')
 
   const [form, setForm] = useState({
-    customer:           existing?.customer           ?? '',
-    number:             existing?.number             ?? 'INV-000003',
-    orderNumber:        existing?.orderNumber        ?? '',
-    invoiceDate:        existing?.invoiceDate        ?? today,
-    terms:              existing?.terms              ?? 'Due on Receipt',
-    dueDate:            existing?.dueDate            ?? today,
-    accountsReceivable: existing?.accountsReceivable ?? 'Accounts Receivable',
-    salesperson:        existing?.salesperson        ?? '',
-    subject:            existing?.subject            ?? '',
-    customerNotes:      existing?.customerNotes      ?? 'Thanks for your business.',
-    termsConditions:    existing?.termsConditions    ?? '',
-    discount:           existing?.discount           ?? 0,
-    taxType:            existing?.taxType            ?? 'TDS',
-    tax:                existing?.tax                ?? '',
-    adjustment:         existing?.adjustment         ?? '',
+    customer:        existing?.customerName  ?? '',
+    profileName:     existing?.profileName   ?? '',
+    orderNumber:     '',
+    repeatEvery:     'Week',
+    startOn:         today,
+    endsOn:          '',
+    neverExpires:    true,
+    paymentTerms:    existing?.paymentTerms  ?? 'Due on Receipt',
+    salesperson:     '',
+    subject:         '',
+    customerNotes:   'Thanks for your business.',
+    terms:           '',
+    discount:        0,
+    tax:             '',
+    adjustment:      '',
+    roundOff:        0,
   })
 
-  const [items, setItems]   = useState(existing?.items ?? [EMPTY_ITEM()])
+  const [items, setItems]   = useState(existing?.items?.map(i => ({ ...i, details: i.name })) ?? [EMPTY_ITEM()])
   const [errors, setErrors] = useState({})
 
   function handle(e) {
-    const { name, value } = e.target
-    setForm(p => ({ ...p, [name]: value }))
+    const { name, value, type, checked } = e.target
+    setForm(p => ({ ...p, [name]: type === 'checkbox' ? checked : value }))
     setErrors(p => ({ ...p, [name]: '' }))
-
-    // auto-compute due date when terms change
-    if (name === 'terms') {
-      const base = form.invoiceDate || today
-      const days = { 'Due on Receipt': 0, 'Net 15': 15, 'Net 30': 30, 'Net 45': 45, 'Net 60': 60 }
-      const d = new Date(base)
-      d.setDate(d.getDate() + (days[value] ?? 0))
-      setForm(p => ({ ...p, terms: value, dueDate: d.toISOString().split('T')[0] }))
-    }
   }
 
   function handleItem(index, field, value) {
@@ -95,62 +83,56 @@ function InvoiceForm() {
   const subTotal    = items.reduce((s, it) => s + Number(it.qty) * Number(it.rate), 0)
   const discountAmt = subTotal * (Number(form.discount) / 100)
   const adjustAmt   = Number(form.adjustment) || 0
-  const total       = subTotal - discountAmt + adjustAmt
-  const totalQty    = items.reduce((s, it) => s + Number(it.qty), 0)
+  const roundOff    = Number(form.roundOff) || 0
+  const total       = subTotal - discountAmt + adjustAmt + roundOff
   const fmt = v => Number(v).toFixed(2)
 
   function validate() {
     const errs = {}
     if (!form.customer)    errs.customer    = 'Customer is required.'
-    if (!form.invoiceDate) errs.invoiceDate = 'Invoice date is required.'
+    if (!form.profileName) errs.profileName = 'Profile name is required.'
     return errs
   }
 
-  function handleSubmit(asDraft = false) {
+  function handleSubmit(e) {
+    e.preventDefault()
     const errs = validate()
     if (Object.keys(errs).length) { setErrors(errs); return }
-    console.log(asDraft ? 'Draft:' : 'Send:', { ...form, items })
-    navigate(isEdit ? `/sales/invoices/${id}` : '/sales/invoices')
+    console.log(isEdit ? 'Updated:' : 'Created:', { ...form, items })
+    navigate('/sales/recurring-invoices')
   }
 
-  const backPath = isEdit ? `/sales/invoices/${id}` : '/sales/invoices'
+  const backPath = isEdit ? `/sales/recurring-invoices/${id}` : '/sales/recurring-invoices'
 
   return (
     <div className="flex min-h-full flex-col bg-white">
 
       {/* ── Page header ── */}
       <div className="flex items-center justify-between border-b border-gray-200 px-6 py-4">
-        <div className="flex items-center gap-3">
-          <FileText className="h-5 w-5 text-gray-500" />
+        <div className="flex items-center gap-2">
+          <RefreshCw className="h-5 w-5 text-gray-500" />
           <h1 className="text-lg font-semibold text-gray-900">
-            {isEdit ? `Edit Invoice — ${existing?.number}` : 'New Invoice'}
+            {isEdit ? `Edit Recurring Invoice — ${existing?.profileName}` : 'New Recurring Invoice'}
           </h1>
         </div>
-        <div className="flex items-center gap-2">
-          <button type="button" className="flex h-8 w-8 items-center justify-center rounded-lg border border-gray-200 text-gray-400 hover:bg-gray-50 transition">
-            <Settings className="h-4 w-4" />
-          </button>
-          <button type="button" onClick={() => navigate(backPath)}
-            className="flex h-8 w-8 items-center justify-center rounded-lg border border-gray-200 text-gray-400 hover:bg-gray-50 transition">
-            <X className="h-4 w-4" />
-          </button>
-        </div>
+        <button type="button" onClick={() => navigate(backPath)}
+          className="flex h-8 w-8 items-center justify-center rounded-lg border border-gray-200 text-gray-400 hover:bg-gray-50 transition">
+          <X className="h-4 w-4" />
+        </button>
       </div>
 
-      <div className="flex-1 overflow-y-auto bg-gray-50">
+      <form onSubmit={handleSubmit} className="flex flex-1 flex-col overflow-y-auto bg-gray-50">
 
         {/* ══ Section 1 — Header fields ══ */}
         <div className="border-b border-gray-200 bg-white px-8 py-5">
 
           {/* Customer Name */}
           <div className="mb-2 flex items-center gap-4">
-            <div className="w-44 shrink-0">
-              <Label required>Customer Name</Label>
-            </div>
+            <div className="w-44 shrink-0"><Label required>Customer Name</Label></div>
             <div className="flex gap-2 max-w-sm flex-1">
               <select name="customer" value={form.customer} onChange={handle}
                 className={`${selectCls} ${errors.customer ? 'border-red-400' : ''}`}>
-                <option value="">Select or add a customer</option>
+                <option value="">Select Customer</option>
                 {CUSTOMERS.map(c => <option key={c} value={c}>{c}</option>)}
               </select>
               <button type="button" className="flex h-9 w-9 shrink-0 items-center justify-center rounded-lg bg-blue-600 text-white hover:bg-blue-700 transition">
@@ -160,15 +142,11 @@ function InvoiceForm() {
             {errors.customer && <p className="text-xs text-red-500">{errors.customer}</p>}
           </div>
 
-          {/* Invoice# */}
-          <FieldRow label="Invoice#" required>
-            <div className="flex gap-2">
-              <input name="number" value={form.number} onChange={handle}
-                className={`${inputCls} ${errors.number ? 'border-red-400' : ''}`} />
-              <button type="button" className="shrink-0 text-gray-400 hover:text-gray-600">
-                <Settings className="h-4 w-4" />
-              </button>
-            </div>
+          {/* Profile Name */}
+          <FieldRow label="Profile Name" required>
+            <input name="profileName" value={form.profileName} onChange={handle}
+              className={`${inputCls} ${errors.profileName ? 'border-red-400' : ''}`} />
+            {errors.profileName && <p className="mt-1 text-xs text-red-500">{errors.profileName}</p>}
           </FieldRow>
 
           {/* Order Number */}
@@ -176,29 +154,37 @@ function InvoiceForm() {
             <input name="orderNumber" value={form.orderNumber} onChange={handle} className={inputCls} />
           </FieldRow>
 
-          {/* Invoice Date + Terms + Due Date */}
+          {/* Repeat Every */}
+          <FieldRow label="Repeat Every" required>
+            <select name="repeatEvery" value={form.repeatEvery} onChange={handle} className={selectCls}>
+              {REPEAT_OPTIONS.map(o => <option key={o} value={o}>{o}</option>)}
+            </select>
+          </FieldRow>
+
+          {/* Start On + Ends On + Never Expires */}
           <div className="flex items-start gap-6 py-2.5">
-            <div className="w-44 shrink-0 pt-2"><Label required>Invoice Date</Label></div>
+            <div className="w-44 shrink-0 pt-2"><Label>Start On</Label></div>
             <div className="w-44">
-              <input name="invoiceDate" type="date" value={form.invoiceDate} onChange={handle}
-                className={`${inputCls} ${errors.invoiceDate ? 'border-red-400' : ''}`} />
+              <input name="startOn" value={form.startOn} onChange={handle} className={inputCls} placeholder="dd/MM/yyyy" />
             </div>
             <div className="flex items-center gap-3 pt-1">
-              <span className="text-sm font-medium text-gray-700">Terms</span>
-              <select name="terms" value={form.terms} onChange={handle}
-                className="rounded border border-gray-300 bg-white px-2 py-2 text-sm outline-none focus:border-blue-500">
-                {PAYMENT_TERMS.map(t => <option key={t} value={t}>{t}</option>)}
-              </select>
-              <span className="text-sm font-medium text-gray-700">Due Date</span>
-              <input name="dueDate" type="date" value={form.dueDate} onChange={handle}
-                className="w-36 rounded border border-gray-300 px-3 py-2 text-sm outline-none focus:border-blue-500" />
+              <span className="text-sm font-medium text-gray-700">Ends On</span>
+              <input name="endsOn" value={form.endsOn} onChange={handle} disabled={form.neverExpires}
+                placeholder="dd/MM/yyyy"
+                className={`w-32 rounded border border-gray-300 px-3 py-2 text-sm outline-none ${form.neverExpires ? 'bg-gray-50 text-gray-300 cursor-not-allowed' : 'focus:border-blue-500'}`}
+              />
+              <label className="flex cursor-pointer items-center gap-1.5 text-sm text-gray-700">
+                <input type="checkbox" name="neverExpires" checked={form.neverExpires} onChange={handle}
+                  className="h-4 w-4 accent-blue-600 rounded" />
+                Never Expires
+              </label>
             </div>
           </div>
 
-          {/* Accounts Receivable */}
-          <FieldRow label="Accounts Receivable" hint>
-            <select name="accountsReceivable" value={form.accountsReceivable} onChange={handle} className={selectCls}>
-              {AR_ACCOUNTS.map(a => <option key={a} value={a}>{a}</option>)}
+          {/* Payment Terms */}
+          <FieldRow label="Payment Terms">
+            <select name="paymentTerms" value={form.paymentTerms} onChange={handle} className={selectCls}>
+              {PAYMENT_TERMS.map(t => <option key={t} value={t}>{t}</option>)}
             </select>
           </FieldRow>
 
@@ -210,6 +196,13 @@ function InvoiceForm() {
             </select>
           </FieldRow>
 
+          {/* Associate Project(s) Hours */}
+          <FieldRow label="Associate Project(s) Hours">
+            <p className="pt-2 text-sm italic text-gray-400">
+              {form.customer ? 'No active projects for this customer.' : 'There are no active projects for this customer.'}
+            </p>
+          </FieldRow>
+
           {/* Subject */}
           <div className="flex items-start gap-4 py-2.5">
             <div className="w-44 shrink-0 pt-2 flex items-center gap-1">
@@ -217,23 +210,19 @@ function InvoiceForm() {
               <HelpCircle className="h-3.5 w-3.5 text-gray-300" />
             </div>
             <textarea name="subject" value={form.subject} onChange={handle} rows={2}
-              placeholder="Let your customer know what this Invoice is for"
-              className={`${inputCls} max-w-xs resize-none`} />
+              placeholder="Let your customer know what this Recurring Invoice is for"
+              className={`${inputCls} max-w-xs resize`} />
           </div>
+
         </div>
 
         {/* ══ Section 2 — Item Table ══ */}
         <div className="border-b border-gray-200 bg-white mt-4 px-8 py-5">
           <div className="mb-3 flex items-center justify-between">
             <span className="text-sm font-semibold text-gray-800">Item Table</span>
-            <div className="flex items-center gap-3">
-              <button type="button" className="flex items-center gap-1 text-sm text-blue-600 hover:underline">
-                <ScanLine className="h-3.5 w-3.5" /> Scan Item
-              </button>
-              <button type="button" className="flex items-center gap-1 text-sm text-blue-600 hover:underline">
-                <RefreshCw className="h-3.5 w-3.5" /> Bulk Actions
-              </button>
-            </div>
+            <button type="button" className="flex items-center gap-1 text-sm text-blue-600 hover:underline">
+              <RefreshCw className="h-3.5 w-3.5" /> Bulk Actions
+            </button>
           </div>
 
           <table className="w-full border-collapse text-sm">
@@ -297,11 +286,13 @@ function InvoiceForm() {
           {/* Totals */}
           <div className="mt-6 flex justify-end">
             <div className="w-80 space-y-2 text-sm">
+
               <div className="flex items-center justify-between font-semibold text-gray-700">
                 <span>Sub Total</span>
                 <span>{fmt(subTotal)}</span>
               </div>
 
+              {/* Discount */}
               <div className="flex items-center justify-between gap-3">
                 <span className="text-gray-500">Discount</span>
                 <div className="flex items-center gap-2">
@@ -314,16 +305,9 @@ function InvoiceForm() {
                 </div>
               </div>
 
+              {/* TDS */}
               <div className="flex items-center justify-between gap-3">
-                <div className="flex items-center gap-3">
-                  {['TDS', 'TCS'].map(t => (
-                    <label key={t} className="flex cursor-pointer items-center gap-1 text-sm text-gray-600">
-                      <input type="radio" name="taxType" value={t} checked={form.taxType === t} onChange={handle}
-                        className="h-3.5 w-3.5 accent-blue-600" />
-                      {t}
-                    </label>
-                  ))}
-                </div>
+                <span className="text-gray-500">TDS</span>
                 <div className="flex items-center gap-2">
                   <select name="tax" value={form.tax} onChange={handle}
                     className="w-32 rounded border border-gray-200 px-2 py-1 text-xs outline-none">
@@ -333,6 +317,7 @@ function InvoiceForm() {
                 </div>
               </div>
 
+              {/* Adjustment */}
               <div className="flex items-center justify-between gap-3">
                 <div className="flex items-center gap-1">
                   <input value="Adjustment" readOnly className="w-24 rounded border border-gray-200 px-2 py-1 text-xs text-gray-600 outline-none" />
@@ -343,15 +328,31 @@ function InvoiceForm() {
                 <span className="w-16 text-right text-gray-700">{fmt(adjustAmt)}</span>
               </div>
 
+              {/* Round Off */}
+              <div className="flex items-center justify-between gap-3">
+                <div>
+                  <p className="text-gray-500">Round Off</p>
+                  <div className="flex items-center gap-1 text-xs text-gray-400">
+                    (No Rounding)
+                    <button type="button" className="text-blue-400 hover:text-blue-600">
+                      <Pencil className="h-3 w-3" />
+                    </button>
+                  </div>
+                </div>
+                <span className="text-right text-gray-700">{fmt(roundOff)}</span>
+              </div>
+
+              {/* Total */}
               <div className="flex items-center justify-between border-t border-gray-200 pt-2">
                 <span className="text-base font-bold text-gray-800">Total ( ₹ )</span>
                 <span className="text-base font-bold text-gray-900">{fmt(total)}</span>
               </div>
+
             </div>
           </div>
         </div>
 
-        {/* ══ Section 3 — Notes, Terms, Attachments ══ */}
+        {/* ══ Section 3 — Notes + Terms ══ */}
         <div className="mt-4 bg-white px-8 py-6">
           <div className="grid grid-cols-2 gap-8">
             <div className="space-y-5">
@@ -359,68 +360,40 @@ function InvoiceForm() {
                 <label className="mb-1.5 block text-sm font-medium text-gray-700">Customer Notes</label>
                 <textarea name="customerNotes" value={form.customerNotes} onChange={handle} rows={4}
                   className={`${inputCls} resize-none`} />
-                <p className="mt-1 text-xs text-blue-500">Will be displayed on the invoice</p>
               </div>
               <div>
                 <label className="mb-1.5 block text-sm font-medium text-gray-700">Terms &amp; Conditions</label>
-                <textarea name="termsConditions" value={form.termsConditions} onChange={handle} rows={4}
+                <textarea name="terms" value={form.terms} onChange={handle} rows={4}
                   placeholder="Enter the terms and conditions of your business to be displayed in your transaction"
                   className={`${inputCls} resize-none`} />
               </div>
-            </div>
-            <div>
-              <label className="mb-1.5 block text-sm font-medium text-gray-700">Attach File(s) to Invoice</label>
-              <div className="flex items-center gap-1">
-                <button type="button" onClick={() => fileRef.current?.click()}
-                  className="flex items-center gap-2 rounded-l-lg border border-gray-300 bg-white px-4 py-2 text-sm font-medium text-gray-700 hover:bg-gray-50 transition">
-                  <Upload className="h-4 w-4" /> Upload File
-                </button>
-                <button type="button" className="rounded-r-lg border border-l-0 border-gray-300 bg-white px-2 py-2 text-gray-500 hover:bg-gray-50">
-                  <ChevronDown className="h-4 w-4" />
-                </button>
-                <input ref={fileRef} type="file" multiple className="hidden" />
-              </div>
-              <p className="mt-2 text-xs text-gray-400">You can upload a maximum of 10 files, 10MB each</p>
             </div>
           </div>
         </div>
 
         <div className="h-6" />
-      </div>
 
-      {/* ── Sticky bottom bar ── */}
-      <div className="sticky bottom-0 z-10 flex items-center justify-between border-t border-gray-200 bg-white px-6 py-3">
-        <div className="flex items-center gap-2">
-          <button type="button" onClick={() => handleSubmit(true)}
-            className="rounded-lg border border-gray-300 bg-white px-4 py-2 text-sm font-medium text-gray-700 hover:bg-gray-50 transition">
-            Save as Draft
-          </button>
-          <div className="flex overflow-hidden rounded-lg">
-            <button type="button" onClick={() => handleSubmit(false)}
-              className="rounded-l-lg bg-blue-600 px-4 py-2 text-sm font-medium text-white hover:bg-blue-700 transition">
-              Save and Send
+        {/* ── Sticky bottom bar ── */}
+        <div className="sticky bottom-0 z-10 flex items-center justify-between border-t border-gray-200 bg-white px-6 py-3">
+          <div className="flex items-center gap-2">
+            <button type="submit"
+              className="rounded-lg bg-blue-600 px-5 py-2 text-sm font-medium text-white hover:bg-blue-700 transition">
+              {isEdit ? 'Update' : 'Save'}
             </button>
-            <button type="button"
-              className="rounded-r-lg border-l border-blue-700 bg-blue-600 px-2 py-2 text-white hover:bg-blue-700 transition">
-              <ChevronDown className="h-4 w-4" />
+            <button type="button" onClick={() => navigate(backPath)}
+              className="rounded-lg border border-gray-300 px-4 py-2 text-sm font-medium text-gray-700 hover:bg-gray-50 transition">
+              Cancel
             </button>
           </div>
-          <button type="button" onClick={() => navigate(backPath)}
-            className="rounded-lg px-4 py-2 text-sm font-medium text-gray-500 hover:text-gray-700 transition">
-            Cancel
-          </button>
+          <div className="text-sm text-gray-400">
+            PDF Template: <span className="text-gray-600">'Spreadsheet Template'</span>{' '}
+            <button type="button" className="text-blue-600 hover:underline">Change</button>
+          </div>
         </div>
-        <div className="flex items-center gap-4 text-sm text-gray-500">
-          <button type="button" className="flex items-center gap-1 text-blue-600 hover:underline">
-            <RefreshCw className="h-3.5 w-3.5" /> Make Recurring
-          </button>
-          <span>Total Amount: <span className="font-semibold text-gray-800">₹ {fmt(total)}</span></span>
-          <span>Total Quantity: <span className="font-semibold text-gray-800">{totalQty}</span></span>
-        </div>
-      </div>
 
+      </form>
     </div>
   )
 }
 
-export default InvoiceForm
+export default RecurringInvoiceForm

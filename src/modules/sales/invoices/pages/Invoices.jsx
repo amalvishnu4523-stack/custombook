@@ -43,7 +43,7 @@ function Invoices() {
       data={SAMPLE}
       rowKey="id"
       newButtonText="New Invoice"
-      onNew={() => {}}
+      onNew={() => navigate('/sales/invoices/new')}
       onRowClick={(row) => navigate(`/sales/invoices/${row.id}`)}
       showSearch={false}
       showFilter={false}

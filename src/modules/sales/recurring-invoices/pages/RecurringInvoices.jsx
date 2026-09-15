@@ -1,4 +1,5 @@
 import { useState } from 'react'
+import { useNavigate } from 'react-router-dom'
 import DataTable from '../../../../shared/components/table/DataTable'
 
 const SAMPLE = [
@@ -9,7 +10,7 @@ const SAMPLE = [
 ]
 
 const COLUMNS = [
-  { key: 'profile',   header: 'Profile Name', minWidth: 180 },
+  { key: 'profile',   header: 'Profile Name', minWidth: 180 },   
   { key: 'customer',  header: 'Customer',     minWidth: 180 },
   { key: 'frequency', header: 'Frequency',    minWidth: 120 },
   { key: 'nextDate',  header: 'Next Invoice', minWidth: 140 },
@@ -26,6 +27,7 @@ const COLUMNS = [
 
 function RecurringInvoices() {
   const [selected, setSelected] = useState([])
+  const navigate = useNavigate()
 
   return (
     <DataTable
@@ -34,7 +36,8 @@ function RecurringInvoices() {
       data={SAMPLE}
       rowKey="id"
       newButtonText="New Profile"
-      onNew={() => {}}
+      onNew={() => navigate('/sales/recurring-invoices/new')}
+      onRowClick={(row) => navigate(`/sales/recurring-invoices/${row.id}`)}
       showSearch={false}
       showFilter={false}
       selectable

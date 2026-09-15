@@ -25,7 +25,11 @@ import SalesOrders from '../modules/sales/sales-orders/pages/SalesOrders'
 import SalesOrderForm from '../modules/sales/sales-orders/pages/SalesOrderForm'
 import SalesOrderDetails from '../modules/sales/sales-orders/pages/SalesOrderDetails'
 import Invoices from '../modules/sales/invoices/pages/Invoices'
+import InvoiceForm from '../modules/sales/invoices/pages/InvoiceForm'
+import InvoiceDetails from '../modules/sales/invoices/pages/InvoiceDetails'
 import RecurringInvoices from '../modules/sales/recurring-invoices/pages/RecurringInvoices'
+import RecurringInvoiceDetails from '../modules/sales/recurring-invoices/pages/RecurringInvoiceDetails'
+import RecurringInvoiceForm from '../modules/sales/recurring-invoices/pages/RecurringInvoiceForm'
 import DeliveryChallans from '../modules/sales/delivery-challans/pages/DeliveryChallans'
 import PaymentsReceived from '../modules/sales/payments-received/pages/PaymentsReceived'
 import CreditNotes from '../modules/sales/credit-notes/pages/CreditNotes'
@@ -68,7 +72,13 @@ const router = createBrowserRouter([
           { path: 'sales/orders/:id/edit',    element: <SalesOrderForm /> },
           { path: 'sales/orders/:id',         element: <SalesOrderDetails /> },
           { path: 'sales/invoices',           element: <Invoices /> },
-          { path: 'sales/recurring-invoices', element: <RecurringInvoices /> },
+          { path: 'sales/invoices/new',       element: <InvoiceForm /> },
+          { path: 'sales/invoices/:id/edit',  element: <InvoiceForm /> },
+          { path: 'sales/invoices/:id',       element: <InvoiceDetails /> },
+          { path: 'sales/recurring-invoices',             element: <RecurringInvoices /> },
+          { path: 'sales/recurring-invoices/new',         element: <RecurringInvoiceForm /> },
+          { path: 'sales/recurring-invoices/:id/edit',    element: <RecurringInvoiceForm /> },
+          { path: 'sales/recurring-invoices/:id',         element: <RecurringInvoiceDetails /> },
           { path: 'sales/delivery-challans',  element: <DeliveryChallans /> },
           { path: 'sales/payments-received',  element: <PaymentsReceived /> },
           { path: 'sales/credit-notes',       element: <CreditNotes /> },
