@@ -145,7 +145,7 @@ function QuotesDetails() {
                   ? 'bg-gray-100 font-medium text-gray-800'
                   : 'bg-white text-gray-500 hover:bg-gray-50'
               }`}
-            >{v}</button>
+            >{v}</button>    
           ))}
         </div>
       </div>
