@@ -31,6 +31,8 @@ import RecurringInvoices from '../modules/sales/recurring-invoices/pages/Recurri
 import RecurringInvoiceDetails from '../modules/sales/recurring-invoices/pages/RecurringInvoiceDetails'
 import RecurringInvoiceForm from '../modules/sales/recurring-invoices/pages/RecurringInvoiceForm'
 import DeliveryChallans from '../modules/sales/delivery-challans/pages/DeliveryChallans'
+import DeliveryChalanDetails from '../modules/sales/delivery-challans/pages/DeliveryChalanDetails'
+import DeliveryChalanForm from '../modules/sales/delivery-challans/pages/DeliveryChalanForm'
 import PaymentsReceived from '../modules/sales/payments-received/pages/PaymentsReceived'
 import CreditNotes from '../modules/sales/credit-notes/pages/CreditNotes'
 import TimeTracking from '../modules/time-tracking/pages/TimeTracking'
@@ -79,7 +81,10 @@ const router = createBrowserRouter([
           { path: 'sales/recurring-invoices/new',         element: <RecurringInvoiceForm /> },
           { path: 'sales/recurring-invoices/:id/edit',    element: <RecurringInvoiceForm /> },
           { path: 'sales/recurring-invoices/:id',         element: <RecurringInvoiceDetails /> },
-          { path: 'sales/delivery-challans',  element: <DeliveryChallans /> },
+          { path: 'sales/delivery-challans',           element: <DeliveryChallans /> },
+          { path: 'sales/delivery-challans/new',       element: <DeliveryChalanForm /> },
+          { path: 'sales/delivery-challans/:id/edit',  element: <DeliveryChalanForm /> },
+          { path: 'sales/delivery-challans/:id',       element: <DeliveryChalanDetails /> },
           { path: 'sales/payments-received',  element: <PaymentsReceived /> },
           { path: 'sales/credit-notes',       element: <CreditNotes /> },
           { path: 'time-tracking', element: <TimeTracking /> },
