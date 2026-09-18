@@ -1,94 +1,70 @@
-import React from "react";
+import React from 'react'
 
 function PayablesCard() {
-  const totalUnpaid = 0;
-  const current = 0;
-  const overdue = 0;
+  const totalUnpaid = 0
+  const current     = 0
+  const overdue     = 0
 
-  const overduePercentage =
-    totalUnpaid > 0 ? (overdue / totalUnpaid) * 100 : 0;
+  const overduePct = totalUnpaid > 0 ? (overdue / totalUnpaid) * 100 : 0
+
+  const fmt = (val) =>
+    `₹${Number(val).toLocaleString('en-IN', { minimumFractionDigits: 2 })}`
 
   return (
-    <div className="w-full overflow-hidden rounded-xl border border-slate-200 bg-white">
+    <div className="w-full rounded-2xl border border-gray-200 bg-white shadow-sm overflow-hidden">
       {/* Header */}
-      <div className="flex h-[58px] items-center justify-between border-b border-slate-200 bg-slate-50/70 px-5">
-        <h2 className="text-[20px] font-medium text-slate-800">
-          Total Payables
-        </h2>
-
-        <button className="flex items-center gap-1.5 text-[16px] text-slate-800 transition hover:text-blue-600">
-          <span className="flex h-[16px] w-[16px] items-center justify-center rounded-full bg-blue-500 text-[13px] font-bold leading-none text-white">
+      <div className="flex items-center justify-between px-5 py-4 border-b border-gray-100">
+        <h2 className="text-sm font-semibold text-gray-800 tracking-tight">Total Payables</h2>
+        <button className="flex items-center gap-1.5 text-xs font-semibold text-blue-600 hover:text-blue-700 transition">
+          <span className="flex h-4 w-4 items-center justify-center rounded-full bg-blue-500 text-white text-[10px] font-bold leading-none shadow-sm">
             +
           </span>
           New
         </button>
       </div>
 
-      {/* Content */}
-      <div className="px-[18px] py-5">
-        {/* Total unpaid bills */}
-        <p className="text-[16px] text-slate-600">
-          Total Unpaid Bills
-        </p>
+      {/* Body */}
+      <div className="px-5 pt-4 pb-5 space-y-3">
 
-        <p className="mt-1 text-[23px] font-medium text-slate-900">
-          ₹
-          {totalUnpaid.toLocaleString("en-IN", {
-            minimumFractionDigits: 2,
-          })}
-        </p>
+        {/* Label + Amount */}
+        <div>
+          <p className="text-xs font-medium text-blue-500 mb-1">Total Unpaid Bills</p>
+          <p className="text-2xl font-bold text-gray-900 tracking-tight">{fmt(totalUnpaid)}</p>
+        </div>
 
         {/* Progress bar */}
-        <div className="mt-5 h-[14px] w-full overflow-hidden bg-slate-100">
+        <div className="relative h-2 w-full rounded-full bg-gray-100 overflow-hidden">
           <div
-            className="h-full bg-orange-500 transition-all duration-300"
+            className="absolute left-0 top-0 h-full bg-blue-500 transition-all duration-300"
+            style={{ width: `${totalUnpaid > 0 ? (current / totalUnpaid) * 100 : 0}%` }}
+          />
+          <div
+            className="absolute top-0 h-full bg-green-500 transition-all duration-300"
             style={{
-              width: `${overduePercentage}%`,
+              left:  `${totalUnpaid > 0 ? (current / totalUnpaid) * 100 : 0}%`,
+              width: `${overduePct}%`,
             }}
           />
         </div>
 
-        {/* Current / Overdue */}
-        <div className="mt-7 flex flex-wrap items-center gap-x-6 gap-y-3 text-[18px]">
-          {/* Current */}
-          <div className="flex items-center gap-1.5">
-            <span className="h-[11px] w-[11px] rounded-[3px] bg-blue-600" />
-
-            <span className="text-slate-600">
-              Current :
-            </span>
-
-            <span className="font-medium text-slate-900">
-              ₹
-              {current.toLocaleString("en-IN", {
-                minimumFractionDigits: 2,
-              })}
-            </span>
+        {/* Legend */}
+        <div className="flex items-center gap-5 pt-1">
+          <div className="flex items-center gap-2 text-xs text-gray-500">
+            <span className="h-2.5 w-2.5 rounded-sm bg-blue-500 shrink-0" />
+            <span>Current :</span>
+            <span className="font-semibold text-gray-800">{fmt(current)}</span>
           </div>
-
-          {/* Overdue */}
-          <div className="flex items-center gap-1.5">
-            <span className="h-[11px] w-[11px] rounded-[3px] bg-orange-500" />
-
-            <span className="text-slate-600">
-              Overdue :
-            </span>
-
-            <span className="font-medium text-slate-900">
-              ₹
-              {overdue.toLocaleString("en-IN", {
-                minimumFractionDigits: 2,
-              })}
-            </span>
-
-            <span className="text-[13px] text-slate-900">
-              ▼
-            </span>
+          <div className="flex items-center gap-2 text-xs text-gray-500">
+            <span className="h-2.5 w-2.5 rounded-sm bg-green-500 shrink-0" />
+            <span>Overdue :</span>
+            <span className="font-semibold text-gray-800">{fmt(overdue)}</span>
+            <button className="text-gray-400 hover:text-gray-600 transition text-[10px]">▼</button>
           </div>
         </div>
+
       </div>
     </div>
-  );
+  )
 }
 
-export default PayablesCard;
+export default PayablesCard
