@@ -1,4 +1,5 @@
 import { useState } from 'react'
+import { useNavigate } from 'react-router-dom'
 import DataTable from '../../../../shared/components/table/DataTable'
 
 const SAMPLE = [
@@ -26,6 +27,7 @@ const COLUMNS = [
 
 function CreditNotes() {
   const [selected, setSelected] = useState([])
+  const navigate = useNavigate()
 
   return (
     <DataTable
@@ -34,13 +36,14 @@ function CreditNotes() {
       data={SAMPLE}
       rowKey="id"
       newButtonText="New Credit Note"
-      onNew={() => {}}
+      onNew={() => navigate('/sales/credit-notes/new')}
       showSearch={false}
       showFilter={false}
       selectable
       selectedRows={selected}
       onSelectAll={() => setSelected(selected.length === SAMPLE.length ? [] : SAMPLE.map(r => r.id))}
       onSelectRow={(key) => setSelected(prev => prev.includes(key) ? prev.filter(k => k !== key) : [...prev, key])}
+      onRowClick={(row) => navigate(`/sales/credit-notes/${row.id}`)}
     />
   )
 }

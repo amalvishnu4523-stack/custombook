@@ -34,7 +34,11 @@ import DeliveryChallans from '../modules/sales/delivery-challans/pages/DeliveryC
 import DeliveryChalanDetails from '../modules/sales/delivery-challans/pages/DeliveryChalanDetails'
 import DeliveryChalanForm from '../modules/sales/delivery-challans/pages/DeliveryChalanForm'
 import PaymentsReceived from '../modules/sales/payments-received/pages/PaymentsReceived'
+import PaymentReceivedDetails from '../modules/sales/payments-received/pages/PaymentReceivedDetails'
+import PaymentReceivedForm from '../modules/sales/payments-received/pages/PaymentReceivedForm'
 import CreditNotes from '../modules/sales/credit-notes/pages/CreditNotes'
+import CreditNoteDetails from '../modules/sales/credit-notes/pages/CreditNoteDetails'
+import CreditNoteForm from '../modules/sales/credit-notes/pages/CreditNoteForm'
 import TimeTracking from '../modules/time-tracking/pages/TimeTracking'
 import Login from '../auth/pages/Login'
 import Signup from '../auth/pages/Signup'
@@ -85,8 +89,14 @@ const router = createBrowserRouter([
           { path: 'sales/delivery-challans/new',       element: <DeliveryChalanForm /> },
           { path: 'sales/delivery-challans/:id/edit',  element: <DeliveryChalanForm /> },
           { path: 'sales/delivery-challans/:id',       element: <DeliveryChalanDetails /> },
-          { path: 'sales/payments-received',  element: <PaymentsReceived /> },
-          { path: 'sales/credit-notes',       element: <CreditNotes /> },
+          { path: 'sales/payments-received',           element: <PaymentsReceived /> },
+          { path: 'sales/payments-received/new',       element: <PaymentReceivedForm /> },
+          { path: 'sales/payments-received/:id/edit',  element: <PaymentReceivedForm /> },
+          { path: 'sales/payments-received/:id',       element: <PaymentReceivedDetails /> },
+          { path: 'sales/credit-notes',           element: <CreditNotes /> },
+          { path: 'sales/credit-notes/new',       element: <CreditNoteForm /> },
+          { path: 'sales/credit-notes/:id/edit',  element: <CreditNoteForm /> },
+          { path: 'sales/credit-notes/:id',       element: <CreditNoteDetails /> },
           { path: 'time-tracking', element: <TimeTracking /> },
         ],
       },
