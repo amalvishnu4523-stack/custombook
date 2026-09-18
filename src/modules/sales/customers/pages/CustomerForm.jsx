@@ -92,6 +92,9 @@ const PAYMENT_TERMS  = ['Due on Receipt', 'Net 15', 'Net 30', 'Net 45', 'Net 60'
 const TABS           = ['Other Details', 'Address', 'Contact Persons', 'Custom Fields', 'Reporting Tags', 'Remarks']
 const AR_ACCOUNTS    = ['', 'Accounts Receivable', 'Trade Receivables', 'Other Receivables']
 
+const COUNTRIES = ['', 'India', 'United States', 'United Kingdom', 'Australia', 'Canada', 'UAE', 'Singapore']
+const STATES    = ['', 'Andhra Pradesh', 'Delhi', 'Goa', 'Gujarat', 'Karnataka', 'Kerala', 'Maharashtra', 'Punjab', 'Rajasthan', 'Tamil Nadu', 'Telangana', 'Uttar Pradesh', 'West Bengal']
+
 /* ── Shared styles ── */
 const inputCls  = 'w-full rounded border border-gray-300 px-3 py-2 text-sm outline-none transition focus:border-blue-500 focus:ring-1 focus:ring-blue-100 placeholder:text-gray-300'
 const selectCls = 'rounded border border-gray-300 bg-white px-3 py-2 text-sm outline-none transition focus:border-blue-500 focus:ring-1 focus:ring-blue-100'
@@ -105,6 +108,15 @@ function FieldRow({ label, required, hint, children }) {
         </span>
         {hint && <p className="text-xs text-gray-400 mt-0.5">{hint}</p>}
       </div>
+      <div className="flex-1">{children}</div>
+    </div>
+  )
+}
+
+function AddrRow({ label, children }) {
+  return (
+    <div className="flex items-start gap-4">
+      <span className="w-32 shrink-0 pt-2 text-sm text-gray-600">{label}</span>
       <div className="flex-1">{children}</div>
     </div>
   )
@@ -145,7 +157,50 @@ function CustomerForm() {
     twitter:            existing?.twitter            ?? '',
     skype:              existing?.skype              ?? '',
     facebook:           existing?.facebook           ?? '',
+    // Billing Address
+    billAttention:      existing?.billAttention      ?? '',
+    billCountry:        existing?.billCountry        ?? '',
+    billStreet1:        existing?.billStreet1        ?? '',
+    billStreet2:        existing?.billStreet2        ?? '',
+    billCity:           existing?.billCity           ?? '',
+    billState:          existing?.billState          ?? '',
+    billPinCode:        existing?.billPinCode        ?? '',
+    billPhone:          existing?.billPhone          ?? '',
+    billPhoneCode:      existing?.billPhoneCode      ?? '+91',
+    billFax:            existing?.billFax            ?? '',
+    // Shipping Address
+    shipAttention:      existing?.shipAttention      ?? '',
+    shipCountry:        existing?.shipCountry        ?? '',
+    shipStreet1:        existing?.shipStreet1        ?? '',
+    shipStreet2:        existing?.shipStreet2        ?? '',
+    shipCity:           existing?.shipCity           ?? '',
+    shipState:          existing?.shipState          ?? '',
+    shipPinCode:        existing?.shipPinCode        ?? '',
+    shipPhone:          existing?.shipPhone          ?? '',
+    shipPhoneCode:      existing?.shipPhoneCode      ?? '+91',
+    shipFax:            existing?.shipFax            ?? '',
   })
+
+  const [contactPersons, setContactPersons] = useState(
+    existing?.contactPersons ?? [
+      { id: 1, salutation: '', firstName: '', lastName: '', email: '', workPhone: '', workPhoneCode: '+91', mobile: '', mobileCode: '+91' }
+    ]
+  )
+
+  function handleContact(index, field, value) {
+    setContactPersons(prev => prev.map((c, i) => i === index ? { ...c, [field]: value } : c))
+  }
+
+  function addContactPerson() {
+    setContactPersons(prev => [...prev, {
+      id: Date.now(), salutation: '', firstName: '', lastName: '', email: '',
+      workPhone: '', workPhoneCode: '+91', mobile: '', mobileCode: '+91'
+    }])
+  }
+
+  function removeContactPerson(index) {
+    setContactPersons(prev => prev.filter((_, i) => i !== index))
+  }
 
   const [errors, setErrors] = useState({})
 
@@ -217,7 +272,7 @@ function CustomerForm() {
         </div>
       </div>
 
-      <form id="customer-form" onSubmit={handleSubmit} className="mx-auto max-w-3xl px-6 py-6">
+      <form id="customer-form" onSubmit={handleSubmit} className="mx-auto max-w-5xl px-6 py-6">
 
         {/* ── Top fields ── */}
         <div className="space-y-0 divide-y divide-gray-100 rounded-xl border border-gray-200 bg-white px-6 mb-6">
@@ -444,10 +499,288 @@ function CustomerForm() {
           )}
 
           {activeTab === 'Address' && (
-            <p className="py-12 text-center text-sm text-gray-400">Address details coming soon.</p>
+            <div className="py-6">
+              <div className="grid grid-cols-2 gap-x-12">
+
+                {/* ── Billing Address ── */}
+                <div>
+                  <h3 className="mb-5 text-base font-semibold text-gray-900">Billing Address</h3>
+                  <div className="space-y-4">
+
+                    <AddrRow label="Attention">
+                      <input name="billAttention" value={form.billAttention} onChange={handle} className={inputCls} />
+                    </AddrRow>
+
+                    <AddrRow label="Country/Region">
+                      <select name="billCountry" value={form.billCountry} onChange={handle} className={`${selectCls} w-full`}>
+                        {COUNTRIES.map(c => <option key={c} value={c}>{c || 'Select'}</option>)}
+                      </select>
+                    </AddrRow>
+
+                    <AddrRow label="Address">
+                      <textarea name="billStreet1" value={form.billStreet1} onChange={handle} rows={2} placeholder="Street 1" className={`${inputCls} resize-none mb-2`} />
+                      <textarea name="billStreet2" value={form.billStreet2} onChange={handle} rows={2} placeholder="Street 2" className={`${inputCls} resize-none`} />
+                    </AddrRow>
+
+                    <AddrRow label="City">
+                      <input name="billCity" value={form.billCity} onChange={handle} className={inputCls} />
+                    </AddrRow>
+
+                    <AddrRow label="State">
+                      <select name="billState" value={form.billState} onChange={handle} className={`${selectCls} w-full`}>
+                        {STATES.map(s => <option key={s} value={s}>{s || 'Select or type to add'}</option>)}
+                      </select>
+                    </AddrRow>
+
+                    <AddrRow label="Pin Code">
+                      <input name="billPinCode" value={form.billPinCode} onChange={handle} className={inputCls} />
+                    </AddrRow>
+
+                    <AddrRow label="Phone">
+                      <div className="flex gap-2">
+                        <select name="billPhoneCode" value={form.billPhoneCode} onChange={handle} className={`${selectCls} w-20 shrink-0`}>
+                          {PHONE_CODES.map(c => <option key={c}>{c}</option>)}
+                        </select>
+                        <input name="billPhone" value={form.billPhone} onChange={handle} className={inputCls} />
+                      </div>
+                    </AddrRow>
+
+                    <AddrRow label="Fax Number">
+                      <input name="billFax" value={form.billFax} onChange={handle} className={inputCls} />
+                    </AddrRow>
+
+                  </div>
+                </div>
+
+                {/* ── Shipping Address ── */}
+                <div>
+                  <div className="mb-5 flex items-center gap-2">
+                    <h3 className="text-base font-semibold text-gray-900">Shipping Address</h3>
+                    <span className="text-gray-400 text-sm">(</span>
+                    <button
+                      type="button"
+                      onClick={() => setForm(p => ({
+                        ...p,
+                        shipAttention: p.billAttention,
+                        shipCountry:   p.billCountry,
+                        shipStreet1:   p.billStreet1,
+                        shipStreet2:   p.billStreet2,
+                        shipCity:      p.billCity,
+                        shipState:     p.billState,
+                        shipPinCode:   p.billPinCode,
+                        shipPhone:     p.billPhone,
+                        shipPhoneCode: p.billPhoneCode,
+                        shipFax:       p.billFax,
+                      }))}
+                      className="flex items-center gap-1 text-sm text-blue-600 hover:underline"
+                    >
+                      <span className="text-blue-500">↓</span> Copy billing address
+                    </button>
+                    <span className="text-gray-400 text-sm">)</span>
+                  </div>
+                  <div className="space-y-4">
+
+                    <AddrRow label="Attention">
+                      <input name="shipAttention" value={form.shipAttention} onChange={handle} className={inputCls} />
+                    </AddrRow>
+
+                    <AddrRow label="Country/Region">
+                      <select name="shipCountry" value={form.shipCountry} onChange={handle} className={`${selectCls} w-full`}>
+                        {COUNTRIES.map(c => <option key={c} value={c}>{c || 'Select'}</option>)}
+                      </select>
+                    </AddrRow>
+
+                    <AddrRow label="Address">
+                      <textarea name="shipStreet1" value={form.shipStreet1} onChange={handle} rows={2} placeholder="Street 1" className={`${inputCls} resize-none mb-2`} />
+                      <textarea name="shipStreet2" value={form.shipStreet2} onChange={handle} rows={2} placeholder="Street 2" className={`${inputCls} resize-none`} />
+                    </AddrRow>
+
+                    <AddrRow label="City">
+                      <input name="shipCity" value={form.shipCity} onChange={handle} className={inputCls} />
+                    </AddrRow>
+
+                    <AddrRow label="State">
+                      <select name="shipState" value={form.shipState} onChange={handle} className={`${selectCls} w-full`}>
+                        {STATES.map(s => <option key={s} value={s}>{s || 'Select or type to add'}</option>)}
+                      </select>
+                    </AddrRow>
+
+                    <AddrRow label="Pin Code">
+                      <input name="shipPinCode" value={form.shipPinCode} onChange={handle} className={inputCls} />
+                    </AddrRow>
+
+                    <AddrRow label="Phone">
+                      <div className="flex gap-2">
+                        <select name="shipPhoneCode" value={form.shipPhoneCode} onChange={handle} className={`${selectCls} w-20 shrink-0`}>
+                          {PHONE_CODES.map(c => <option key={c}>{c}</option>)}
+                        </select>
+                        <input name="shipPhone" value={form.shipPhone} onChange={handle} className={inputCls} />
+                      </div>
+                    </AddrRow>
+
+                    <AddrRow label="Fax Number">
+                      <input name="shipFax" value={form.shipFax} onChange={handle} className={inputCls} />
+                    </AddrRow>
+
+                  </div>
+                </div>
+
+              </div>
+            </div>
           )}
           {activeTab === 'Contact Persons' && (
-            <p className="py-12 text-center text-sm text-gray-400">Contact persons coming soon.</p>
+            <div className="py-5">
+              <table className="w-full border-collapse text-sm table-fixed">
+                <colgroup>
+                  <col className="w-32" />
+                  <col className="w-36" />
+                  <col className="w-36" />
+                  <col />
+                  <col className="w-52" />
+                  <col className="w-52" />
+                  <col className="w-16" />
+                </colgroup>
+                <thead>
+                  <tr className="border-b-2 border-gray-200">
+                    <th className="pb-2 pr-3 text-left text-xs font-semibold uppercase tracking-wider text-gray-400">Salutation</th>
+                    <th className="pb-2 pr-3 text-left text-xs font-semibold uppercase tracking-wider text-gray-400">First Name</th>
+                    <th className="pb-2 pr-3 text-left text-xs font-semibold uppercase tracking-wider text-gray-400">Last Name</th>
+                    <th className="pb-2 pr-3 text-left text-xs font-semibold uppercase tracking-wider text-gray-400">Email Address</th>
+                    <th className="pb-2 pr-3 text-left text-xs font-semibold uppercase tracking-wider text-gray-400">Work Phone</th>
+                    <th className="pb-2 pr-3 text-left text-xs font-semibold uppercase tracking-wider text-gray-400">Mobile</th>
+                    <th className="pb-2" />
+                  </tr>
+                </thead>
+                <tbody>
+                  {contactPersons.map((cp, i) => (
+                    <tr key={cp.id} className="border-b border-gray-100">
+                      {/* Salutation */}
+                      <td className="py-2 pr-3">
+                        <div className="flex items-center justify-between rounded border border-gray-200 bg-white px-2.5 py-2">
+                          <select
+                            value={cp.salutation}
+                            onChange={e => handleContact(i, 'salutation', e.target.value)}
+                            className="w-full bg-transparent text-sm text-gray-700 outline-none cursor-pointer"
+                          >
+                            {SALUTATIONS.map(s => <option key={s} value={s}>{s}</option>)}
+                          </select>
+                        </div>
+                      </td>
+
+                      {/* First Name */}
+                      <td className="py-2 pr-3">
+                        <input
+                          value={cp.firstName}
+                          onChange={e => handleContact(i, 'firstName', e.target.value)}
+                          className="w-full rounded border border-gray-200 px-2.5 py-2 text-sm text-gray-800 outline-none transition focus:border-blue-400 focus:ring-1 focus:ring-blue-100"
+                        />
+                      </td>
+
+                      {/* Last Name */}
+                      <td className="py-2 pr-3">
+                        <input
+                          value={cp.lastName}
+                          onChange={e => handleContact(i, 'lastName', e.target.value)}
+                          className="w-full rounded border border-gray-200 px-2.5 py-2 text-sm text-gray-800 outline-none transition focus:border-blue-400 focus:ring-1 focus:ring-blue-100"
+                        />
+                      </td>
+
+                      {/* Email */}
+                      <td className="py-2 pr-3">
+                        <input
+                          type="email"
+                          value={cp.email}
+                          onChange={e => handleContact(i, 'email', e.target.value)}
+                          className="w-full rounded border border-gray-200 px-2.5 py-2 text-sm text-gray-800 outline-none transition focus:border-blue-400 focus:ring-1 focus:ring-blue-100"
+                        />
+                      </td>
+
+                      {/* Work Phone */}
+                      <td className="py-2 pr-3">
+                        <div className="flex gap-1.5">
+                          <div className="flex items-center rounded border border-gray-200 bg-white px-2 py-2 gap-1 shrink-0">
+                            <select
+                              value={cp.workPhoneCode}
+                              onChange={e => handleContact(i, 'workPhoneCode', e.target.value)}
+                              className="bg-transparent text-sm text-gray-700 outline-none cursor-pointer"
+                            >
+                              {PHONE_CODES.map(c => <option key={c}>{c}</option>)}
+                            </select>
+                            <svg className="h-3 w-3 text-gray-400 shrink-0" viewBox="0 0 20 20" fill="currentColor">
+                              <path fillRule="evenodd" d="M5.23 7.21a.75.75 0 011.06.02L10 11.168l3.71-3.938a.75.75 0 111.08 1.04l-4.25 4.5a.75.75 0 01-1.08 0l-4.25-4.5a.75.75 0 01.02-1.06z" clipRule="evenodd"/>
+                            </svg>
+                          </div>
+                          <input
+                            value={cp.workPhone}
+                            onChange={e => handleContact(i, 'workPhone', e.target.value)}
+                            className="flex-1 min-w-0 rounded border border-gray-200 px-2.5 py-2 text-sm text-gray-800 outline-none transition focus:border-blue-400 focus:ring-1 focus:ring-blue-100"
+                          />
+                        </div>
+                      </td>
+
+                      {/* Mobile */}
+                      <td className="py-2 pr-3">
+                        <div className="flex gap-1.5">
+                          <div className="flex items-center rounded border border-gray-200 bg-white px-2 py-2 gap-1 shrink-0">
+                            <select
+                              value={cp.mobileCode}
+                              onChange={e => handleContact(i, 'mobileCode', e.target.value)}
+                              className="bg-transparent text-sm text-gray-700 outline-none cursor-pointer"
+                            >
+                              {PHONE_CODES.map(c => <option key={c}>{c}</option>)}
+                            </select>
+                            <svg className="h-3 w-3 text-gray-400 shrink-0" viewBox="0 0 20 20" fill="currentColor">
+                              <path fillRule="evenodd" d="M5.23 7.21a.75.75 0 011.06.02L10 11.168l3.71-3.938a.75.75 0 111.08 1.04l-4.25 4.5a.75.75 0 01-1.08 0l-4.25-4.5a.75.75 0 01.02-1.06z" clipRule="evenodd"/>
+                            </svg>
+                          </div>
+                          <input
+                            value={cp.mobile}
+                            onChange={e => handleContact(i, 'mobile', e.target.value)}
+                            className="flex-1 min-w-0 rounded border border-gray-200 px-2.5 py-2 text-sm text-gray-800 outline-none transition focus:border-blue-400 focus:ring-1 focus:ring-blue-100"
+                          />
+                        </div>
+                      </td>
+
+                      {/* Actions */}
+                      <td className="py-2 text-center">
+                        <div className="flex items-center justify-center gap-1">
+                          <button
+                            type="button"
+                            className="flex h-7 w-7 items-center justify-center rounded text-gray-300 hover:text-gray-500 transition"
+                          >
+                            <svg viewBox="0 0 4 18" className="h-4 w-2 fill-current" xmlns="http://www.w3.org/2000/svg">
+                              <circle cx="2" cy="2"  r="1.5"/>
+                              <circle cx="2" cy="9"  r="1.5"/>
+                              <circle cx="2" cy="16" r="1.5"/>
+                            </svg>
+                          </button>
+                          <button
+                            type="button"
+                            onClick={() => removeContactPerson(i)}
+                            className="flex h-7 w-7 items-center justify-center rounded text-red-300 hover:text-red-500 transition"
+                          >
+                            <svg viewBox="0 0 24 24" className="h-4.5 w-4.5" fill="none" stroke="currentColor" strokeWidth="2">
+                              <circle cx="12" cy="12" r="10"/>
+                              <line x1="15" y1="9" x2="9" y2="15"/>
+                              <line x1="9" y1="9" x2="15" y2="15"/>
+                            </svg>
+                          </button>
+                        </div>
+                      </td>
+                    </tr>
+                  ))}
+                </tbody>
+              </table>
+
+              <button
+                type="button"
+                onClick={addContactPerson}
+                className="mt-5 flex items-center gap-2 rounded-full border border-blue-300 bg-blue-50 px-4 py-2 text-sm font-medium text-blue-600 hover:bg-blue-100 transition"
+              >
+                <span className="text-base font-bold leading-none">+</span>
+                Add Contact Person
+              </button>
+            </div>
           )}
           {activeTab === 'Custom Fields' && (
             <p className="py-12 text-center text-sm text-gray-400">No custom fields configured.</p>

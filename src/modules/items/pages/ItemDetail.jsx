@@ -1,76 +1,9 @@
-import { useState } from 'react'
+import { useState, useEffect } from 'react'
 import { useParams, useNavigate } from 'react-router-dom'
 import { Pencil, Package, ChevronDown } from 'lucide-react'
+import { getItemById, subscribe } from '../store/itemsStore'
 
-const SAMPLE_ITEMS = [
-  {
-    id: 1, name: 'Wireless Mouse', sku: 'WM-001', type: 'Goods', unit: 'pcs',
-    itemType: 'Sales and Purchase Items',
-    createdSource: 'User',
-    salesPrice: 799, salesAccount: 'Sales', description: 'Ergonomic wireless mouse with USB receiver.',
-    purchasePrice: 500, purchaseAccount: 'Cost of Goods Sold',
-    stock: 120,
-    createdAt: '2026-08-01 10:00 AM', createdBy: 'Amal Vishnu',
-    transactions: [
-      { date: '2026-08-05', type: 'Quotes',   number: 'QT-000001', customer: 'Priya Nair',   qty: 2, price: 799,  total: 1598,  status: 'Accepted' },
-      { date: '2026-08-12', type: 'Invoices', number: 'INV-000001', customer: 'Kiran Kumar', qty: 1, price: 799,  total: 799,   status: 'Paid' },
-    ],
-  },
-  {
-    id: 2, name: 'Mechanical Keyboard', sku: 'MK-002', type: 'Goods', unit: 'pcs',
-    itemType: 'Sales and Purchase Items',
-    createdSource: 'User',
-    salesPrice: 2499, salesAccount: 'Sales', description: 'Mechanical keyboard with Cherry MX switches.',
-    purchasePrice: 1800, purchaseAccount: 'Cost of Goods Sold',
-    stock: 45,
-    createdAt: '2026-08-02 11:30 AM', createdBy: 'Amal Vishnu',
-    transactions: [
-      { date: '2026-08-10', type: 'Quotes', number: 'QT-000002', customer: 'Sneha Thomas', qty: 1, price: 2499, total: 2499, status: 'Sent' },
-    ],
-  },
-  {
-    id: 3, name: 'Web Development', sku: 'SV-001', type: 'Service', unit: 'hrs',
-    itemType: 'Sales and Purchase Items',
-    createdSource: 'User',
-    salesPrice: 1500, salesAccount: 'Sales', description: 'Custom web development services per hour.',
-    purchasePrice: null, purchaseAccount: null,
-    stock: null,
-    createdAt: '2026-08-03 09:15 AM', createdBy: 'Amal Vishnu',
-    transactions: [],
-  },
-  {
-    id: 4, name: 'USB-C Hub', sku: 'UH-003', type: 'Goods', unit: 'pcs',
-    itemType: 'Sales and Purchase Items',
-    createdSource: 'User',
-    salesPrice: 1299, salesAccount: 'Sales', description: '7-in-1 USB-C hub with HDMI and PD charging.',
-    purchasePrice: 900, purchaseAccount: 'Cost of Goods Sold',
-    stock: 30,
-    createdAt: '2026-08-04 02:00 PM', createdBy: 'Amal Vishnu',
-    transactions: [],
-  },
-  {
-    id: 5, name: 'SEO Audit', sku: 'SV-002', type: 'Service', unit: 'hrs',
-    itemType: 'Sales and Purchase Items',
-    createdSource: 'User',
-    salesPrice: 2000, salesAccount: 'Sales', description: 'Comprehensive SEO audit and recommendations.',
-    purchasePrice: null, purchaseAccount: null,
-    stock: null,
-    createdAt: '2026-08-05 03:45 PM', createdBy: 'Amal Vishnu',
-    transactions: [],
-  },
-  {
-    id: 6, name: 'Monitor Stand', sku: 'MS-004', type: 'Goods', unit: 'pcs',
-    itemType: 'Sales and Purchase Items',
-    createdSource: 'User',
-    salesPrice: 999, salesAccount: 'Sales', description: 'Adjustable aluminium monitor stand.',
-    purchasePrice: 650, purchaseAccount: 'Cost of Goods Sold',
-    stock: 60,
-    createdAt: '2026-08-06 04:00 PM', createdBy: 'Amal Vishnu',
-    transactions: [],
-  },
-]
-
-const FILTER_TYPES = ['Quotes', 'Invoices', 'Sales Orders', 'Credit Notes']
+const FILTER_TYPES   = ['Quotes', 'Invoices', 'Sales Orders', 'Credit Notes']
 const STATUS_OPTIONS = ['All', 'Draft', 'Sent', 'Accepted', 'Paid', 'Overdue']
 
 const STATUS_STYLES = {
@@ -81,7 +14,7 @@ const STATUS_STYLES = {
   Overdue:  'bg-red-100 text-red-600',
 }
 
-/* ── small helpers ── */
+/* ── helpers ── */
 function Row({ label, value }) {
   return (
     <div className="flex py-3 border-b border-gray-100 last:border-0">
@@ -115,20 +48,20 @@ function Dropdown({ label, options, value, onChange }) {
   )
 }
 
-/* ── tabs ── */
 const TABS = ['Overview', 'Transactions', 'History']
 
 function ItemDetail() {
-  const { id } = useParams()
-  const navigate = useNavigate()
-  const [activeTab, setActiveTab] = useState('Overview')
-  const [filterType, setFilterType] = useState('Quotes')
+  const { id }     = useParams()
+  const navigate   = useNavigate()
+  const [activeTab,    setActiveTab]    = useState('Overview')
+  const [filterType,   setFilterType]   = useState('Quotes')
   const [filterStatus, setFilterStatus] = useState('All')
-  const [itemData, setItemData] = useState(() =>
-    SAMPLE_ITEMS.find(i => String(i.id) === String(id)) ?? null
-  )
+  const [item, setItem] = useState(() => getItemById(id))
 
-  const item = itemData
+  /* Keep in sync when store updates (e.g. after edit) */
+  useEffect(() => {
+    return subscribe(() => setItem(getItemById(id)))
+  }, [id])
 
   if (!item) {
     return (
@@ -142,17 +75,19 @@ function ItemDetail() {
     )
   }
 
-  const fmt = (val) => val != null ? `₹${Number(val).toLocaleString('en-IN', { minimumFractionDigits: 2 })}` : '—'
+  const fmt = (val) => val != null
+    ? `₹${Number(val).toLocaleString('en-IN', { minimumFractionDigits: 2 })}`
+    : '—'
 
-  const filteredTx = item.transactions.filter(tx => {
-    const typeMatch = tx.type === filterType
+  const transactions  = item.transactions ?? []
+  const filteredTx    = transactions.filter(tx => {
+    const typeMatch   = tx.type === filterType
     const statusMatch = filterStatus === 'All' || tx.status === filterStatus
     return typeMatch && statusMatch
   })
 
   return (
-    <>
-      <div className="min-h-full bg-white">
+    <div className="min-h-full bg-white">
 
       {/* ── Page Header ── */}
       <div className="flex items-center justify-between px-6 pt-6 pb-0">
@@ -185,53 +120,47 @@ function ItemDetail() {
 
       <div className="px-6 py-6">
 
-        {/* ══════════════ OVERVIEW ══════════════ */}
+        {/* ══ OVERVIEW ══ */}
         {activeTab === 'Overview' && (
           <div>
-            {/* Basic info */}
             <div className="mt-2">
-              <Row label="Item Type"      value={item.itemType} />
+              <Row label="Item Type"      value={item.itemType ?? 'Sales and Purchase Items'} />
               <Row label="Unit"           value={item.unit} />
-              <Row label="Created Source" value={item.createdSource} />
+              <Row label="Created Source" value={item.createdSource ?? 'User'} />
             </div>
 
-            {/* Purchase Information */}
             {item.purchasePrice != null && (
               <Section title="Purchase Information">
-                <Row label="Cost Price"        value={fmt(item.purchasePrice)} />
-                <Row label="Purchase Account"  value={item.purchaseAccount} />
+                <Row label="Cost Price"       value={fmt(item.purchasePrice)} />
+                <Row label="Purchase Account" value={item.purchaseAccount} />
               </Section>
             )}
 
-            {/* Sales Information */}
             <Section title="Sales Information">
-              <Row label="Selling Price"  value={fmt(item.salesPrice)} />
-              <Row label="Sales Account"  value={item.salesAccount} />
-              <Row label="Description"    value={item.description} />
+              <Row label="Selling Price" value={fmt(item.salesPrice)} />
+              <Row label="Sales Account" value={item.salesAccount} />
+              <Row label="Description"   value={item.salesDescription ?? item.description} />
             </Section>
 
-            {/* Reporting Tags */}
             <Section title="Reporting Tags">
               <p className="text-sm text-gray-400">No reporting tag has been associated with this item.</p>
             </Section>
           </div>
         )}
 
-        {/* ══════════════ TRANSACTIONS ══════════════ */}
+        {/* ══ TRANSACTIONS ══ */}
         {activeTab === 'Transactions' && (
           <div>
-            {/* Filters */}
             <div className="mb-5 flex items-center gap-3">
-              <Dropdown label="Filter By" options={FILTER_TYPES} value={filterType} onChange={setFilterType} />
+              <Dropdown label="Filter By" options={FILTER_TYPES}   value={filterType}   onChange={setFilterType} />
               <Dropdown label="Status"    options={STATUS_OPTIONS} value={filterStatus} onChange={setFilterStatus} />
             </div>
 
-            {/* Table */}
             <div className="overflow-x-auto rounded-lg border border-gray-200">
               <table className="w-full min-w-max border-collapse text-sm">
                 <thead>
                   <tr className="border-b border-gray-200 bg-gray-50">
-                    {['Date', 'Quote Number', 'Customer Name', 'Quantity Sold', 'Price', 'Total', 'Status'].map(h => (
+                    {['Date', 'Number', 'Customer Name', 'Quantity Sold', 'Price', 'Total', 'Status'].map(h => (
                       <th key={h} className="px-4 py-3 text-left text-xs font-semibold uppercase tracking-wide text-gray-500">
                         {h}
                       </th>
@@ -245,30 +174,28 @@ function ItemDetail() {
                         No transactions found.
                       </td>
                     </tr>
-                  ) : (
-                    filteredTx.map((tx, i) => (
-                      <tr key={i} className="border-b border-gray-100 hover:bg-gray-50">
-                        <td className="px-4 py-3 text-gray-700">{tx.date}</td>
-                        <td className="px-4 py-3 text-blue-600">{tx.number}</td>
-                        <td className="px-4 py-3 text-gray-700">{tx.customer}</td>
-                        <td className="px-4 py-3 text-gray-700">{Number(tx.qty).toFixed(2)}</td>
-                        <td className="px-4 py-3 text-gray-700">{fmt(tx.price)}</td>
-                        <td className="px-4 py-3 font-medium text-green-600">{fmt(tx.total)}</td>
-                        <td className="px-4 py-3">
-                          <span className={`inline-flex items-center rounded-full px-2.5 py-0.5 text-xs font-medium ${STATUS_STYLES[tx.status] ?? 'bg-gray-100 text-gray-600'}`}>
-                            {tx.status}
-                          </span>
-                        </td>
-                      </tr>
-                    ))
-                  )}
+                  ) : filteredTx.map((tx, i) => (
+                    <tr key={i} className="border-b border-gray-100 hover:bg-gray-50">
+                      <td className="px-4 py-3 text-gray-700">{tx.date}</td>
+                      <td className="px-4 py-3 text-blue-600">{tx.number}</td>
+                      <td className="px-4 py-3 text-gray-700">{tx.customer}</td>
+                      <td className="px-4 py-3 text-gray-700">{Number(tx.qty).toFixed(2)}</td>
+                      <td className="px-4 py-3 text-gray-700">{fmt(tx.price)}</td>
+                      <td className="px-4 py-3 font-medium text-green-600">{fmt(tx.total)}</td>
+                      <td className="px-4 py-3">
+                        <span className={`inline-flex items-center rounded-full px-2.5 py-0.5 text-xs font-medium ${STATUS_STYLES[tx.status] ?? 'bg-gray-100 text-gray-600'}`}>
+                          {tx.status}
+                        </span>
+                      </td>
+                    </tr>
+                  ))}
                 </tbody>
               </table>
             </div>
           </div>
         )}
 
-        {/* ══════════════ HISTORY ══════════════ */}
+        {/* ══ HISTORY ══ */}
         {activeTab === 'History' && (
           <div className="overflow-x-auto rounded-lg border border-gray-200">
             <table className="w-full border-collapse text-sm">
@@ -280,11 +207,11 @@ function ItemDetail() {
               </thead>
               <tbody>
                 <tr className="border-b border-gray-100 hover:bg-gray-50">
-                  <td className="px-4 py-3 text-gray-500">{item.createdAt}</td>
+                  <td className="px-4 py-3 text-gray-500">{item.createdAt ?? '—'}</td>
                   <td className="px-4 py-3">
                     <span className="font-medium text-gray-900">created by</span>
-                    <span className="text-gray-400"> - </span>
-                    <span className="italic text-gray-600">{item.createdBy}</span>
+                    <span className="text-gray-400"> — </span>
+                    <span className="italic text-gray-600">{item.createdBy ?? 'User'}</span>
                   </td>
                 </tr>
               </tbody>
@@ -294,7 +221,6 @@ function ItemDetail() {
 
       </div>
     </div>
-    </>
   )
 }
 

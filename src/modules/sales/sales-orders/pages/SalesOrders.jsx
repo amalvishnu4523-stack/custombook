@@ -3,30 +3,92 @@ import { useNavigate } from 'react-router-dom'
 import DataTable from '../../../../shared/components/table/DataTable'
 
 const SAMPLE = [
-  { id: 1, number: 'SO-001', customer: 'Amal Vishnu',  date: '2026-08-02', delivery: '2026-08-10', amount: 24000, status: 'Confirmed' },
-  { id: 2, number: 'SO-002', customer: 'Kiran Kumar',  date: '2026-08-06', delivery: '2026-08-14', amount: 11500, status: 'Draft' },
-  { id: 3, number: 'SO-003', customer: 'Sneha Thomas', date: '2026-08-11', delivery: '2026-08-20', amount: 6800,  status: 'Delivered' },
-  { id: 4, number: 'SO-004', customer: 'Priya Nair',   date: '2026-08-15', delivery: '2026-08-22', amount: 39000, status: 'Confirmed' },
+  {
+    id: 1,
+    number: 'SO-00002',
+    reference: '',
+    customer: 'abc',
+    date: '18/09/2026',
+    status: 'Draft',
+    invoiced: '',
+    payment: '',
+    amount: 9,
+    expectedShipment: '19/09/2026',
+    orderStatus: 'Draft',
+    deliveryMethod: '',
+  },
+  {
+    id: 2,
+    number: 'SO-00001',
+    reference: '',
+    customer: 'ddcompany',
+    date: '09/09/2026',
+    status: 'Draft',
+    invoiced: '',
+    payment: '',
+    amount: 777,
+    expectedShipment: '',
+    orderStatus: 'Draft',
+    deliveryMethod: '',
+  },
 ]
 
-const STATUS_STYLES = {
-  Draft:     'bg-gray-100 text-gray-600',
-  Confirmed: 'bg-blue-100 text-blue-700',
-  Delivered: 'bg-green-100 text-green-700',
-  Cancelled: 'bg-red-100 text-red-600',
-}
+const fmtAmt = (val) =>
+  `₹${Number(val).toLocaleString('en-IN', { minimumFractionDigits: 2 })}`
+
+/* Gray dot for invoiced / payment columns */
+const Dot = () => (
+  <span className="inline-block h-2 w-2 rounded-full bg-gray-300" />
+)
 
 const COLUMNS = [
-  { key: 'number',   header: 'Order #',        minWidth: 120 },
-  { key: 'customer', header: 'Customer',        minWidth: 180 },
-  { key: 'date',     header: 'Order Date',      minWidth: 130 },
-  { key: 'delivery', header: 'Delivery Date',   minWidth: 130 },
-  { key: 'amount',   header: 'Amount (₹)',      minWidth: 140, align: 'right', render: (val) => `₹${val.toLocaleString('en-IN')}` },
+  {
+    key: 'date', header: 'Date', minWidth: 130,
+    render: (val) => <span className="text-gray-700">{val}</span>,
+  },
+  {
+    key: 'number', header: 'Sales Order#', minWidth: 160,
+    render: (val) => <span className="font-medium text-blue-600">{val}</span>,
+  },
+  {
+    key: 'reference', header: 'Reference#', minWidth: 140,
+    render: (val) => <span className="text-gray-600">{val || ''}</span>,
+  },
+  {
+    key: 'customer', header: 'Customer Name', minWidth: 180,
+    render: (val) => <span className="text-gray-700">{val}</span>,
+  },
   {
     key: 'status', header: 'Status', minWidth: 120,
     render: (val) => (
-      <span className={`inline-flex items-center rounded-full px-2.5 py-0.5 text-xs font-medium ${STATUS_STYLES[val]}`}>{val}</span>
+      <span className="text-xs font-semibold uppercase tracking-wide text-gray-400">{val}</span>
     ),
+  },
+  {
+    key: 'invoiced', header: 'Invoiced', minWidth: 100, align: 'center',
+    render: () => <Dot />,
+  },
+  {
+    key: 'payment', header: 'Payment', minWidth: 100, align: 'center',
+    render: () => <Dot />,
+  },
+  {
+    key: 'amount', header: 'Amount', minWidth: 120, align: 'right',
+    render: (val) => <span className="text-gray-800">{fmtAmt(val)}</span>,
+  },
+  {
+    key: 'expectedShipment', header: 'Expected Shipment Date', minWidth: 200,
+    render: (val) => <span className="text-gray-700">{val || ''}</span>,
+  },
+  {
+    key: 'orderStatus', header: 'Order Status', minWidth: 130,
+    render: (val) => (
+      <span className="text-xs font-semibold uppercase tracking-wide text-gray-400">{val}</span>
+    ),
+  },
+  {
+    key: 'deliveryMethod', header: 'Delivery Method', minWidth: 160,
+    render: (val) => <span className="text-gray-600">{val || ''}</span>,
   },
 ]
 
@@ -36,11 +98,11 @@ function SalesOrders() {
 
   return (
     <DataTable
-      title="Sales Orders"
+      title="All Sales Orders"
       columns={COLUMNS}
       data={SAMPLE}
       rowKey="id"
-      newButtonText="New Sales Order"
+      newButtonText="New"
       onNew={() => navigate('/sales/orders/new')}
       onRowClick={(row) => navigate(`/sales/orders/${row.id}`)}
       showSearch={false}

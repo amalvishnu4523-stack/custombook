@@ -1,40 +1,7 @@
 import { useState, useRef } from 'react'
 import { useNavigate, useParams } from 'react-router-dom'
 import { ImageIcon, ArrowLeft } from 'lucide-react'
-
-// Shared sample data — in a real app this comes from a store/API
-export const SAMPLE_ITEMS = [
-  {
-    id: 1, name: 'Wireless Mouse', type: 'Goods', unit: 'pcs',
-    salesPrice: 799,  salesAccount: 'Sales',            description: 'Ergonomic wireless mouse with USB receiver.',
-    purchasePrice: 500, purchaseAccount: 'Cost of Goods Sold', purchaseDescription: '',
-  },
-  {
-    id: 2, name: 'Mechanical Keyboard', type: 'Goods', unit: 'pcs',
-    salesPrice: 2499, salesAccount: 'Sales',            description: 'Mechanical keyboard with Cherry MX switches.',
-    purchasePrice: 1800, purchaseAccount: 'Cost of Goods Sold', purchaseDescription: '',
-  },
-  {
-    id: 3, name: 'Web Development', type: 'Service', unit: 'hrs',
-    salesPrice: 1500, salesAccount: 'Sales',            description: 'Custom web development services per hour.',
-    purchasePrice: null, purchaseAccount: null, purchaseDescription: '',
-  },
-  {
-    id: 4, name: 'USB-C Hub', type: 'Goods', unit: 'pcs',
-    salesPrice: 1299, salesAccount: 'Sales',            description: '7-in-1 USB-C hub with HDMI and PD charging.',
-    purchasePrice: 900, purchaseAccount: 'Cost of Goods Sold', purchaseDescription: '',
-  },
-  {
-    id: 5, name: 'SEO Audit', type: 'Service', unit: 'hrs',
-    salesPrice: 2000, salesAccount: 'Sales',            description: 'Comprehensive SEO audit and recommendations.',
-    purchasePrice: null, purchaseAccount: null, purchaseDescription: '',
-  },
-  {
-    id: 6, name: 'Monitor Stand', type: 'Goods', unit: 'pcs',
-    salesPrice: 999,  salesAccount: 'Sales',            description: 'Adjustable aluminium monitor stand.',
-    purchasePrice: 650, purchaseAccount: 'Cost of Goods Sold', purchaseDescription: '',
-  },
-]
+import { getItemById, addItem, updateItem } from '../store/itemsStore'
 
 const UNITS             = ['box', 'cm', 'doz', 'ft', 'g', 'hrs', 'kg', 'km', 'ltr', 'mg', 'm', 'pcs', 'set']
 const SALES_ACCOUNTS    = ['Sales', 'Product Sales', 'Service Revenue', 'Other Income']
@@ -93,7 +60,7 @@ function ItemForm() {
 
   // If `id` exists in the URL → edit mode, otherwise → create mode
   const isEdit      = !!id
-  const existing    = isEdit ? SAMPLE_ITEMS.find(i => String(i.id) === String(id)) : null
+  const existing    = isEdit ? getItemById(id) : null
 
   const [form, setForm] = useState(() => {
     if (existing) {
@@ -156,9 +123,28 @@ function ItemForm() {
     e.preventDefault()
     const errs = validate()
     if (Object.keys(errs).length) { setErrors(errs); return }
-    // TODO: persist (create or update) via store/API
-    console.log(isEdit ? 'Updated item:' : 'New item:', form)
-    navigate(isEdit ? `/items/${id}` : '/items')
+
+    const data = {
+      name:                form.name,
+      type:                form.type,
+      unit:                form.unit,
+      salesPrice:          form.salesEnabled    ? Number(form.sellingPrice)   : null,
+      salesAccount:        form.salesEnabled    ? form.salesAccount           : null,
+      salesDescription:    form.salesEnabled    ? form.salesDescription       : '',
+      purchasePrice:       form.purchaseEnabled ? Number(form.costPrice)      : null,
+      purchaseAccount:     form.purchaseEnabled ? form.purchaseAccount        : null,
+      purchaseDescription: form.purchaseEnabled ? form.purchaseDescription    : '',
+      stock:               form.type === 'Goods' ? (existing?.stock ?? 0)    : null,
+      sku:                 existing?.sku ?? '',
+    }
+
+    if (isEdit) {
+      updateItem(id, data)
+      navigate(`/items/${id}`)
+    } else {
+      addItem(data)
+      navigate('/items')
+    }
   }
 
   return (

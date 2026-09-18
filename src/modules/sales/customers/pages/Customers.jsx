@@ -3,33 +3,39 @@ import { useNavigate } from 'react-router-dom'
 import DataTable from '../../../../shared/components/table/DataTable'
 
 const SAMPLE = [
-  { id: 1, name: 'Amal Vishnu',  email: 'amal@example.com',   phone: '9876543210', receivables: 12000, status: 'Active'   },
-  { id: 2, name: 'Priya Nair',   email: 'priya@example.com',  phone: '9123456780', receivables: 5500,  status: 'Active'   },
-  { id: 3, name: 'Rahul Menon',  email: 'rahul@example.com',  phone: '9001234567', receivables: 0,     status: 'Inactive' },
-  { id: 4, name: 'Sneha Thomas', email: 'sneha@example.com',  phone: '9988776655', receivables: 3200,  status: 'Active'   },
-  { id: 5, name: 'Kiran Kumar',  email: 'kiran@example.com',  phone: '9871234560', receivables: 8900,  status: 'Active'   },
+  { id: 1, name: 'ddcompany',   companyName: 'ddcompany', email: '',                        phone: '',            receivables: 0,    unusedCredits: 0 },
+  { id: 2, name: 'abc',         companyName: 'abc',       email: 'amalvishnukvk2@gmail.com', phone: '+91-654795', receivables: 4589, unusedCredits: 0 },
+  { id: 3, name: 'Rahul Menon', companyName: '',          email: 'rahul@example.com',        phone: '9001234567', receivables: 0,    unusedCredits: 0 },
+  { id: 4, name: 'Sneha Thomas',companyName: '',          email: 'sneha@example.com',        phone: '9988776655', receivables: 3200, unusedCredits: 0 },
+  { id: 5, name: 'Kiran Kumar', companyName: '',          email: 'kiran@example.com',        phone: '9871234560', receivables: 8900, unusedCredits: 0 },
 ]
 
+const fmtAmt = (val) => `₹${Number(val).toLocaleString('en-IN', { minimumFractionDigits: 2 })}`
+
 const COLUMNS = [
-  { key: 'name',  header: 'Customer Name', minWidth: 180 },
-  { key: 'email', header: 'Email',         minWidth: 200 },
-  { key: 'phone', header: 'Phone',         minWidth: 140 },
   {
-    key: 'receivables',
-    header: 'Receivables (₹)',
-    minWidth: 160,
-    align: 'right',
-    render: (val) => `₹${val.toLocaleString('en-IN')}`,
+    key: 'name', header: 'Name', minWidth: 160,
+    render: (val) => <span className="font-medium text-blue-600">{val}</span>,
   },
   {
-    key: 'status',
-    header: 'Status',
-    minWidth: 100,
-    render: (val) => (
-      <span className={`inline-flex items-center rounded-full px-2.5 py-0.5 text-xs font-medium ${
-        val === 'Active' ? 'bg-green-100 text-green-700' : 'bg-gray-100 text-gray-500'
-      }`}>{val}</span>
-    ),
+    key: 'companyName', header: 'Company Name', minWidth: 180,
+    render: (val) => <span className="text-gray-700">{val || ''}</span>,
+  },
+  {
+    key: 'email', header: 'Email', minWidth: 220,
+    render: (val) => <span className="text-gray-600">{val || ''}</span>,
+  },
+  {
+    key: 'phone', header: 'Work Phone', minWidth: 140,
+    render: (val) => <span className="text-gray-600">{val || ''}</span>,
+  },
+  {
+    key: 'receivables', header: 'Receivables (BCY)', minWidth: 160, align: 'right',
+    render: (val) => <span className="text-gray-800">{fmtAmt(val)}</span>,
+  },
+  {
+    key: 'unusedCredits', header: 'Unused Credits (BCY)', minWidth: 180, align: 'right',
+    render: (val) => <span className="text-gray-800">{fmtAmt(val)}</span>,
   },
 ]
 
