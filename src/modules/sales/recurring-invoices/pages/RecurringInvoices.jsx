@@ -3,25 +3,44 @@ import { useNavigate } from 'react-router-dom'
 import DataTable from '../../../../shared/components/table/DataTable'
 
 const SAMPLE = [
-  { id: 1, profile: 'Monthly Retainer', customer: 'Amal Vishnu',  frequency: 'Monthly', nextDate: '2026-09-01', amount: 15000, status: 'Active' },
-  { id: 2, profile: 'Weekly Support',   customer: 'Priya Nair',   frequency: 'Weekly',  nextDate: '2026-09-03', amount: 3500,  status: 'Active' },
-  { id: 3, profile: 'Annual License',   customer: 'Kiran Kumar',  frequency: 'Yearly',  nextDate: '2027-01-01', amount: 60000, status: 'Active' },
-  { id: 4, profile: 'Hosting Plan',     customer: 'Rahul Menon',  frequency: 'Monthly', nextDate: '2026-09-10', amount: 999,   status: 'Stopped' },
+  { id: 1, customer: 'abc', profile: 'amal', frequency: 'Weekly', lastInvoiceDate: '15/09/2026', nextInvoiceDate: '22/09/2026', status: 'Active', amount: 777 },
 ]
 
+const fmtAmt = (val) =>
+  `₹${Number(val).toLocaleString('en-IN', { minimumFractionDigits: 2 })}`
+
 const COLUMNS = [
-  { key: 'profile',   header: 'Profile Name', minWidth: 180 },   
-  { key: 'customer',  header: 'Customer',     minWidth: 180 },
-  { key: 'frequency', header: 'Frequency',    minWidth: 120 },
-  { key: 'nextDate',  header: 'Next Invoice', minWidth: 140 },
-  { key: 'amount',    header: 'Amount (₹)',   minWidth: 140, align: 'right', render: (val) => `₹${val.toLocaleString('en-IN')}` },
+  {
+    key: 'customer', header: 'Customer Name', minWidth: 180,
+    render: (val) => <span className="text-gray-700">{val}</span>,
+  },
+  {
+    key: 'profile', header: 'Profile Name', minWidth: 180,
+    render: (val) => <span className="font-medium text-blue-600">{val}</span>,
+  },
+  {
+    key: 'frequency', header: 'Frequency', minWidth: 130,
+    render: (val) => <span className="text-gray-700">{val}</span>,
+  },
+  {
+    key: 'lastInvoiceDate', header: 'Last Invoice Date', minWidth: 160,
+    render: (val) => <span className="text-gray-700">{val}</span>,
+  },
+  {
+    key: 'nextInvoiceDate', header: 'Next Invoice Date', minWidth: 160,
+    render: (val) => <span className="text-gray-700">{val}</span>,
+  },
   {
     key: 'status', header: 'Status', minWidth: 110,
     render: (val) => (
-      <span className={`inline-flex items-center rounded-full px-2.5 py-0.5 text-xs font-medium ${
-        val === 'Active' ? 'bg-green-100 text-green-700' : 'bg-gray-100 text-gray-500'
+      <span className={`text-xs font-semibold uppercase tracking-wide ${
+        val === 'Active' ? 'text-green-600' : 'text-gray-400'
       }`}>{val}</span>
     ),
+  },
+  {
+    key: 'amount', header: 'Amount', minWidth: 130, align: 'right',
+    render: (val) => <span className="text-gray-800">{fmtAmt(val)}</span>,
   },
 ]
 
@@ -31,11 +50,11 @@ function RecurringInvoices() {
 
   return (
     <DataTable
-      title="Recurring Invoices"
+      title="All Recurring Invoices"
       columns={COLUMNS}
       data={SAMPLE}
       rowKey="id"
-      newButtonText="New Profile"
+      newButtonText="New"
       onNew={() => navigate('/sales/recurring-invoices/new')}
       onRowClick={(row) => navigate(`/sales/recurring-invoices/${row.id}`)}
       showSearch={false}

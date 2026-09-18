@@ -3,25 +3,46 @@ import { useNavigate } from 'react-router-dom'
 import DataTable from '../../../../shared/components/table/DataTable'
 
 const SAMPLE = [
-  { id: 1, number: 'CN-001', customer: 'Amal Vishnu',  date: '2026-08-07', invoice: 'INV-001', amount: 2000,  balance: 2000,  status: 'Open' },
-  { id: 2, number: 'CN-002', customer: 'Kiran Kumar',  date: '2026-08-14', invoice: 'INV-003', amount: 5000,  balance: 0,     status: 'Closed' },
-  { id: 3, number: 'CN-003', customer: 'Sneha Thomas', date: '2026-08-19', invoice: 'INV-005', amount: 1500,  balance: 1500,  status: 'Open' },
+  { id: 1, date: '18/09/2026', number: 'CN-00001', reference: '', customer: 'abc', invoice: '', status: 'Draft', amount: 777, balance: 777 },
 ]
 
+const fmtAmt = (val) =>
+  `₹${Number(val).toLocaleString('en-IN', { minimumFractionDigits: 2 })}`
+
 const COLUMNS = [
-  { key: 'number',   header: 'Credit Note #', minWidth: 140 },
-  { key: 'customer', header: 'Customer',      minWidth: 180 },
-  { key: 'date',     header: 'Date',          minWidth: 120 },
-  { key: 'invoice',  header: 'Invoice',       minWidth: 130 },
-  { key: 'amount',   header: 'Amount (₹)',    minWidth: 140, align: 'right', render: (val) => `₹${val.toLocaleString('en-IN')}` },
-  { key: 'balance',  header: 'Balance (₹)',   minWidth: 140, align: 'right', render: (val) => `₹${val.toLocaleString('en-IN')}` },
   {
-    key: 'status', header: 'Status', minWidth: 100,
+    key: 'date', header: 'Date', minWidth: 130,
+    render: (val) => <span className="text-gray-700">{val}</span>,
+  },
+  {
+    key: 'number', header: 'Credit Note#', minWidth: 160,
+    render: (val) => <span className="font-medium text-blue-600">{val}</span>,
+  },
+  {
+    key: 'reference', header: 'Reference Number', minWidth: 160,
+    render: (val) => <span className="text-gray-700">{val || ''}</span>,
+  },
+  {
+    key: 'customer', header: 'Customer Name', minWidth: 180,
+    render: (val) => <span className="text-gray-700">{val}</span>,
+  },
+  {
+    key: 'invoice', header: 'Invoice#', minWidth: 140,
+    render: (val) => <span className="text-gray-700">{val || ''}</span>,
+  },
+  {
+    key: 'status', header: 'Status', minWidth: 110,
     render: (val) => (
-      <span className={`inline-flex items-center rounded-full px-2.5 py-0.5 text-xs font-medium ${
-        val === 'Open' ? 'bg-yellow-100 text-yellow-700' : 'bg-green-100 text-green-700'
-      }`}>{val}</span>
+      <span className="text-xs font-semibold uppercase tracking-wide text-gray-400">{val}</span>
     ),
+  },
+  {
+    key: 'amount', header: 'Amount', minWidth: 120, align: 'right',
+    render: (val) => <span className="text-gray-800">{fmtAmt(val)}</span>,
+  },
+  {
+    key: 'balance', header: 'Balance', minWidth: 120, align: 'right',
+    render: (val) => <span className="text-gray-800">{fmtAmt(val)}</span>,
   },
 ]
 
@@ -31,11 +52,11 @@ function CreditNotes() {
 
   return (
     <DataTable
-      title="Credit Notes"
+      title="All Credit Notes"
       columns={COLUMNS}
       data={SAMPLE}
       rowKey="id"
-      newButtonText="New Credit Note"
+      newButtonText="New"
       onNew={() => navigate('/sales/credit-notes/new')}
       showSearch={false}
       showFilter={false}

@@ -1,20 +1,64 @@
-                                                                                                          import { useState } from 'react'
+import { useState } from 'react'
 import { useNavigate } from 'react-router-dom'
 import DataTable from '../../../../shared/components/table/DataTable'
 
 const SAMPLE = [
-  { id: 1, number: 'PR-001', customer: 'Priya Nair',   date: '2026-08-04', invoice: 'INV-002', mode: 'Bank Transfer', amount: 9500  },
-  { id: 2, number: 'PR-002', customer: 'Kiran Kumar',  date: '2026-08-12', invoice: 'INV-003', mode: 'UPI',           amount: 15000 },
-  { id: 3, number: 'PR-003', customer: 'Amal Vishnu',  date: '2026-08-20', invoice: 'INV-001', mode: 'Cheque',        amount: 5000  },
+  {
+    id: 1,
+    date: '16/09/2026',
+    number: '1',
+    reference: '',
+    customer: 'abc',
+    invoice: 'Customer opening balance',
+    mode: 'Cash',
+    amount: 45,
+    unusedAmount: 0,
+    status: 'Draft',
+  },
 ]
 
+const fmtAmt = (val) =>
+  `₹${Number(val).toLocaleString('en-IN', { minimumFractionDigits: 2 })}`
+
 const COLUMNS = [
-  { key: 'number',   header: 'Payment #',   minWidth: 130 },
-  { key: 'customer', header: 'Customer',    minWidth: 180 },
-  { key: 'date',     header: 'Date',        minWidth: 120 },
-  { key: 'invoice',  header: 'Invoice',     minWidth: 130 },
-  { key: 'mode',     header: 'Mode',        minWidth: 150 },
-  { key: 'amount',   header: 'Amount (₹)',  minWidth: 140, align: 'right', render: (val) => `₹${val.toLocaleString('en-IN')}` },
+  {
+    key: 'date', header: 'Date', minWidth: 130,
+    render: (val) => <span className="text-gray-700">{val}</span>,
+  },
+  {
+    key: 'number', header: 'Payment #', minWidth: 130,
+    render: (val) => <span className="font-medium text-blue-600">{val}</span>,
+  },
+  {
+    key: 'reference', header: 'Reference Number', minWidth: 160,
+    render: (val) => <span className="text-gray-700">{val || ''}</span>,
+  },
+  {
+    key: 'customer', header: 'Customer Name', minWidth: 160,
+    render: (val) => <span className="text-gray-700">{val}</span>,
+  },
+  {
+    key: 'invoice', header: 'Invoice#', minWidth: 180,
+    render: (val) => <span className="text-gray-700">{val || ''}</span>,
+  },
+  {
+    key: 'mode', header: 'Mode', minWidth: 120,
+    render: (val) => <span className="text-gray-700">{val}</span>,
+  },
+  {
+    key: 'amount', header: 'Amount', minWidth: 120, align: 'right',
+    render: (val) => <span className="text-gray-800">{fmtAmt(val)}</span>,
+  },
+  {
+    key: 'unusedAmount', header: 'Unused Amount', minWidth: 140, align: 'right',
+    render: (val) => <span className="text-gray-800">{fmtAmt(val)}</span>,
+  },
+  {
+    key: 'status', header: 'Status', minWidth: 100,
+    render: (val) => (
+      <span className="text-xs font-semibold uppercase tracking-wide text-gray-400">{val}</span>
+    ),
+  },
 ]
 
 function PaymentsReceived() {
@@ -23,11 +67,11 @@ function PaymentsReceived() {
 
   return (
     <DataTable
-      title="Payments Received"
+      title="All Received Payments"
       columns={COLUMNS}
       data={SAMPLE}
       rowKey="id"
-      newButtonText="New Payment"
+      newButtonText="New"
       onNew={() => navigate('/sales/payments-received/new')}
       showSearch={false}
       showFilter={false}

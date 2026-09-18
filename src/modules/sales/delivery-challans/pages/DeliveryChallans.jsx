@@ -3,28 +3,42 @@ import { useNavigate } from 'react-router-dom'
 import DataTable from '../../../../shared/components/table/DataTable'
 
 const SAMPLE = [
-  { id: 1, number: 'DC-001', customer: 'Amal Vishnu',  date: '2026-08-05', salesOrder: 'SO-001', quantity: 10, status: 'Delivered' },
-  { id: 2, number: 'DC-002', customer: 'Sneha Thomas', date: '2026-08-09', salesOrder: 'SO-003', quantity: 4,  status: 'Draft' },
-  { id: 3, number: 'DC-003', customer: 'Kiran Kumar',  date: '2026-08-13', salesOrder: 'SO-004', quantity: 7,  status: 'Delivered' },
-  { id: 4, number: 'DC-004', customer: 'Priya Nair',   date: '2026-08-18', salesOrder: 'SO-002', quantity: 2,  status: 'Draft' },
+  { id: 1, number: 'DC-00001', reference: '', customer: 'abc', date: '15/09/2026', status: 'Draft', invoiceStatus: '', amount: 777 },
 ]
 
-const STATUS_STYLES = {
-  Draft:     'bg-gray-100 text-gray-600',
-  Delivered: 'bg-green-100 text-green-700',
-}
+const fmtAmt = (val) =>
+  `₹${Number(val).toLocaleString('en-IN', { minimumFractionDigits: 2 })}`
 
 const COLUMNS = [
-  { key: 'number',     header: 'Challan #',     minWidth: 130 },
-  { key: 'customer',   header: 'Customer',      minWidth: 180 },
-  { key: 'date',       header: 'Date',          minWidth: 120 },
-  { key: 'salesOrder', header: 'Sales Order',   minWidth: 140 },
-  { key: 'quantity',   header: 'Qty',           minWidth: 80,  align: 'right' },
   {
-    key: 'status', header: 'Status', minWidth: 120,
+    key: 'date', header: 'Date', minWidth: 130,
+    render: (val) => <span className="text-gray-700">{val}</span>,
+  },
+  {
+    key: 'number', header: 'Delivery Challan#', minWidth: 180,
+    render: (val) => <span className="font-medium text-blue-600">{val}</span>,
+  },
+  {
+    key: 'reference', header: 'Reference Number', minWidth: 160,
+    render: (val) => <span className="text-gray-700">{val || ''}</span>,
+  },
+  {
+    key: 'customer', header: 'Customer Name', minWidth: 180,
+    render: (val) => <span className="text-gray-700">{val}</span>,
+  },
+  {
+    key: 'status', header: 'Status', minWidth: 110,
     render: (val) => (
-      <span className={`inline-flex items-center rounded-full px-2.5 py-0.5 text-xs font-medium ${STATUS_STYLES[val]}`}>{val}</span>
+      <span className="text-xs font-semibold uppercase tracking-wide text-gray-400">{val}</span>
     ),
+  },
+  {
+    key: 'invoiceStatus', header: 'Invoice Status', minWidth: 140,
+    render: (val) => <span className="text-gray-500">{val || ''}</span>,
+  },
+  {
+    key: 'amount', header: 'Amount', minWidth: 120, align: 'right',
+    render: (val) => <span className="text-gray-800">{fmtAmt(val)}</span>,
   },
 ]
 
@@ -34,11 +48,11 @@ function DeliveryChallans() {
 
   return (
     <DataTable
-      title="Delivery Challans"
+      title="All Delivery Challans"
       columns={COLUMNS}
       data={SAMPLE}
       rowKey="id"
-      newButtonText="New Challan"
+      newButtonText="New"
       onNew={() => navigate('/sales/delivery-challans/new')}
       showSearch={false}
       showFilter={false}

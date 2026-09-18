@@ -50,8 +50,8 @@ const selectCls = 'w-full rounded border border-gray-300 bg-white px-3 py-2 text
 
 function Label({ children, required }) {
   return (
-    <label className={`block text-sm font-medium ${required ? 'text-red-500' : 'text-gray-700'}`}>
-      {children}{required && ' *'}
+    <label className="block text-sm font-medium text-gray-700">
+      {children}{required && <span className="text-red-400"> *</span>}
     </label>
   )
 }
