@@ -12,7 +12,7 @@ const SAMPLE = [
     companyName: 'amaltest',
     companyAddress: 'Kerala',
     companyCountry: 'India',
-    companyEmail: 'amalvishnukvk2@gmail.com',
+    companyEmail: 'amalvishnukvk2@gmail.com', 
     creditDate: '18/09/2026',
     subTotal: 777,
     total: 777,

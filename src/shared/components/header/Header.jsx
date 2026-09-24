@@ -49,17 +49,7 @@ export default function Header() {
 
       {/* Right Section: Subscription, Profile & Actions */}
       <div className="flex items-center space-x-4">
-        {/* Trial banner text */}
-        <div className="hidden items-center space-x-2 text-xs md:flex">
-          <span className="text-slate-300">Your premium trial plan...</span>
-          <a href="#" className="font-semibold text-blue-400 hover:underline">
-            Subscribe
-          </a>
-        </div>
 
-        <div className="h-4 w-[1px] bg-slate-700 hidden md:block"></div>
-
-        {/* User Account Dropdown */}
         <button className="flex items-center space-x-1 text-sm font-medium hover:text-white">
           <span>amaltest</span>
           <ChevronDown className="h-4 w-4 text-slate-400" />

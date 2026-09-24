@@ -1,9 +1,6 @@
 import React from 'react'
 
-function PayablesCard() {
-  const totalUnpaid = 0
-  const current     = 0
-  const overdue     = 0
+function PayablesCard({ totalUnpaid = 0, overdue = 0, current = 0 }) {
 
   const overduePct = totalUnpaid > 0 ? (overdue / totalUnpaid) * 100 : 0
 
