@@ -5,10 +5,10 @@ import { signinUser } from '../api/authApi'
 
 function Login() {
   const navigate = useNavigate()
-  const [form, setForm]                 = useState({ email: '', password: '' })
+  const [form, setForm] = useState({ email: '', password: '' })
   const [showPassword, setShowPassword] = useState(false)
-  const [error, setError]               = useState('')
-  const [loading, setLoading]           = useState(false)
+  const [error, setError] = useState('')
+  const [loading, setLoading] = useState(false)
 
   function handleChange(e) {
     setForm(prev => ({ ...prev, [e.target.name]: e.target.value }))
@@ -16,9 +16,9 @@ function Login() {
   }
 
   function validate() {
-    if (!form.email.trim())               return 'Email is required.'
+    if (!form.email.trim()) return 'Email is required.'
     if (!/\S+@\S+\.\S+/.test(form.email)) return 'Enter a valid email address.'
-    if (!form.password)                   return 'Password is required.'
+    if (!form.password) return 'Password is required.'
     return null
   }
 
@@ -34,16 +34,16 @@ function Login() {
       const res = await signinUser({ email: form.email, password: form.password })
 
       // Store tokens and user info from API response
-      localStorage.setItem('access_token',  res.access)
+      localStorage.setItem('access_token', res.access)
       localStorage.setItem('refresh_token', res.refresh)
-      localStorage.setItem('token',         res.access)
-      localStorage.setItem('currentUser',   JSON.stringify(res.user))
-      localStorage.setItem('organization',  JSON.stringify(res.organization))
+      localStorage.setItem('token', res.access)
+      localStorage.setItem('currentUser', JSON.stringify(res.user))
+      localStorage.setItem('organization', JSON.stringify(res.organization))
 
       navigate('/dashboard')
     } catch (err) {
       const data = err?.response?.data
-      const msg  =
+      const msg =
         data?.detail ||
         data?.message ||
         data?.non_field_errors?.[0] ||
@@ -161,8 +161,8 @@ function Login() {
               {loading ? (
                 <>
                   <svg className="h-4 w-4 animate-spin" viewBox="0 0 24 24" fill="none">
-                    <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4"/>
-                    <path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8v4l3-3-3-3v4a8 8 0 00-8 8h4z"/>
+                    <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4" />
+                    <path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8v4l3-3-3-3v4a8 8 0 00-8 8h4z" />
                   </svg>
                   Signing in…
                 </>

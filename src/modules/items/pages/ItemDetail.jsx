@@ -1,17 +1,17 @@
 import { useState, useEffect } from 'react'
 import { useParams, useNavigate } from 'react-router-dom'
-import { Pencil, Package, ChevronDown } from 'lucide-react'
-import { getItemById } from '../api/itemsApi'
+import { Pencil, Trash2, Package, ChevronDown } from 'lucide-react'
+import { getItemById, deleteItem } from '../api/itemsApi'
 
-const FILTER_TYPES   = ['Quotes', 'Invoices', 'Sales Orders', 'Credit Notes']
+const FILTER_TYPES = ['Quotes', 'Invoices', 'Sales Orders', 'Credit Notes']
 const STATUS_OPTIONS = ['All', 'Draft', 'Sent', 'Accepted', 'Paid', 'Overdue']
 
 const STATUS_STYLES = {
-  Draft:    'bg-gray-100 text-gray-600',
-  Sent:     'bg-blue-100 text-blue-700',
+  Draft: 'bg-gray-100 text-gray-600',
+  Sent: 'bg-blue-100 text-blue-700',
   Accepted: 'bg-green-100 text-green-700',
-  Paid:     'bg-green-100 text-green-700',
-  Overdue:  'bg-red-100 text-red-600',
+  Paid: 'bg-green-100 text-green-700',
+  Overdue: 'bg-red-100 text-red-600',
 }
 
 /* ── helpers ── */
@@ -51,14 +51,33 @@ function Dropdown({ label, options, value, onChange }) {
 const TABS = ['Overview', 'Transactions', 'History']
 
 function ItemDetail() {
-  const { id }     = useParams()
-  const navigate   = useNavigate()
-  const [activeTab,    setActiveTab]    = useState('Overview')
-  const [filterType,   setFilterType]   = useState('Quotes')
+  const { id } = useParams()
+  const navigate = useNavigate()
+  const [activeTab, setActiveTab] = useState('Overview')
+  const [filterType, setFilterType] = useState('Quotes')
   const [filterStatus, setFilterStatus] = useState('All')
-  const [item,         setItem]         = useState(null)
-  const [loading,      setLoading]      = useState(true)
-  const [error,        setError]        = useState('')
+  const [item, setItem] = useState(null)
+  const [loading, setLoading] = useState(true)
+  const [error, setError] = useState('')
+  const [deleting, setDeleting] = useState(false)
+  const [deleteError, setDeleteError] = useState('')
+  const [showDeleteModal, setShowDeleteModal] = useState(false)
+
+  const handleDelete = async () => {
+    if (!item?.item_id) return
+    try {
+      setDeleting(true)
+      setDeleteError('')
+      await deleteItem(item.item_id)
+      navigate('/items', { replace: true })
+    } catch (err) {
+      const msg = err?.response?.data?.detail || err?.response?.data?.message || err?.message || 'Failed to delete item.'
+      setDeleteError(msg)
+      setShowDeleteModal(false)
+    } finally {
+      setDeleting(false)
+    }
+  }
 
   useEffect(() => {
     setLoading(true)
@@ -85,8 +104,8 @@ function ItemDetail() {
     return (
       <div className="flex items-center justify-center py-24 text-gray-400">
         <svg className="mr-2 h-5 w-5 animate-spin text-blue-500" viewBox="0 0 24 24" fill="none">
-          <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4"/>
-          <path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8v4l3-3-3-3v4a8 8 0 00-8 8h4z"/>
+          <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4" />
+          <path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8v4l3-3-3-3v4a8 8 0 00-8 8h4z" />
         </svg>
         Loading item…
       </div>
@@ -110,9 +129,9 @@ function ItemDetail() {
     ? `₹${Number(val).toLocaleString('en-IN', { minimumFractionDigits: 2 })}`
     : '—'
 
-  const transactions  = item.transactions ?? []
-  const filteredTx    = transactions.filter(tx => {
-    const typeMatch   = tx.type === filterType
+  const transactions = item.transactions ?? []
+  const filteredTx = transactions.filter(tx => {
+    const typeMatch = tx.type === filterType
     const statusMatch = filterStatus === 'All' || tx.status === filterStatus
     return typeMatch && statusMatch
   })
@@ -123,14 +142,29 @@ function ItemDetail() {
       {/* ── Page Header ── */}
       <div className="flex items-center justify-between px-6 pt-6 pb-0">
         <h1 className="text-2xl font-bold text-gray-900">{item.name}</h1>
-        <button
-          onClick={() => navigate(`/items/${item.item_id}/edit`)}
-          className="flex h-9 w-9 items-center justify-center rounded-lg border border-gray-200 text-gray-500 hover:bg-gray-50 transition"
-          title="Edit"
-        >
-          <Pencil className="h-4 w-4" />
-        </button>
+        <div className="flex items-center gap-2">
+          <button
+            onClick={() => navigate(`/items/${item.item_id}/edit`)}
+            className="flex h-9 w-9 items-center justify-center rounded-lg border border-gray-200 text-gray-500 hover:bg-gray-50 hover:text-gray-700 transition"
+            title="Edit"
+          >
+            <Pencil className="h-4 w-4" />
+          </button>
+          <button
+            onClick={() => setShowDeleteModal(true)}
+            className="flex h-9 w-9 items-center justify-center rounded-lg border border-gray-200 text-gray-500 hover:border-red-200 hover:bg-red-50 hover:text-red-600 transition"
+            title="Delete"
+          >
+            <Trash2 className="h-4 w-4" />
+          </button>
+        </div>
       </div>
+
+      {deleteError && (
+        <div className="mx-6 mt-4 rounded-lg border border-red-200 bg-red-50 px-4 py-2 text-sm text-red-600">
+          <span className="font-semibold">Error:</span> {deleteError}
+        </div>
+      )}
 
       {/* ── Tabs ── */}
       <div className="mt-4 flex border-b border-gray-200 px-6">
@@ -138,11 +172,10 @@ function ItemDetail() {
           <button
             key={tab}
             onClick={() => setActiveTab(tab)}
-            className={`mr-6 pb-3 text-sm font-medium transition border-b-2 ${
-              activeTab === tab
+            className={`mr-6 pb-3 text-sm font-medium transition border-b-2 ${activeTab === tab
                 ? 'border-blue-600 text-blue-600'
                 : 'border-transparent text-gray-500 hover:text-gray-700'
-            }`}
+              }`}
           >
             {tab}
           </button>
@@ -155,36 +188,36 @@ function ItemDetail() {
         {activeTab === 'Overview' && (
           <div>
             <div className="mt-2">
-              <Row label="Item Type"    value={item.item_type ?? '—'} />
-              <Row label="SKU"          value={item.sku ?? '—'} />
-              <Row label="Unit"         value={item.unit ?? '—'} />
-              <Row label="Status"       value={item.status ?? '—'} />
-              <Row label="Created At"   value={item.created_at ? new Date(item.created_at).toLocaleString() : '—'} />
+              <Row label="Item Type" value={item.item_type ?? '—'} />
+              <Row label="SKU" value={item.sku ?? '—'} />
+              <Row label="Unit" value={item.unit ?? '—'} />
+              <Row label="Status" value={item.status ?? '—'} />
+              <Row label="Created At" value={item.created_at ? new Date(item.created_at).toLocaleString() : '—'} />
             </div>
 
             {item.purchase_enabled && (
               <Section title="Purchase Information">
-                <Row label="Cost Price"          value={fmt(item.cost_price)} />
-                <Row label="Purchase Account"    value={item.purchase_account ?? '—'} />
+                <Row label="Cost Price" value={fmt(item.cost_price)} />
+                <Row label="Purchase Account" value={item.purchase_account ?? '—'} />
                 <Row label="Purchase Description" value={item.purchase_description || '—'} />
               </Section>
             )}
 
             {item.sales_enabled && (
               <Section title="Sales Information">
-                <Row label="Selling Price"      value={fmt(item.selling_price)} />
-                <Row label="Sales Account"      value={item.sales_account ?? '—'} />
-                <Row label="Sales Description"  value={item.sales_description || '—'} />
-                <Row label="Tax"                value={item.tax || '—'} />
+                <Row label="Selling Price" value={fmt(item.selling_price)} />
+                <Row label="Sales Account" value={item.sales_account ?? '—'} />
+                <Row label="Sales Description" value={item.sales_description || '—'} />
+                <Row label="Tax" value={item.tax || '—'} />
               </Section>
             )}
 
             {item.track_inventory && (
               <Section title="Inventory">
-                <Row label="Inventory Account"  value={item.inventory_account ?? '—'} />
-                <Row label="Opening Stock"      value={item.opening_stock ?? '—'} />
-                <Row label="Rate Per Unit"      value={fmt(item.rate_per_unit)} />
-                <Row label="Valuation Method"   value={item.valuation_method ?? '—'} />
+                <Row label="Inventory Account" value={item.inventory_account ?? '—'} />
+                <Row label="Opening Stock" value={item.opening_stock ?? '—'} />
+                <Row label="Rate Per Unit" value={fmt(item.rate_per_unit)} />
+                <Row label="Valuation Method" value={item.valuation_method ?? '—'} />
               </Section>
             )}
 
@@ -198,8 +231,8 @@ function ItemDetail() {
         {activeTab === 'Transactions' && (
           <div>
             <div className="mb-5 flex items-center gap-3">
-              <Dropdown label="Filter By" options={FILTER_TYPES}   value={filterType}   onChange={setFilterType} />
-              <Dropdown label="Status"    options={STATUS_OPTIONS} value={filterStatus} onChange={setFilterStatus} />
+              <Dropdown label="Filter By" options={FILTER_TYPES} value={filterType} onChange={setFilterType} />
+              <Dropdown label="Status" options={STATUS_OPTIONS} value={filterStatus} onChange={setFilterStatus} />
             </div>
 
             <div className="overflow-x-auto rounded-lg border border-gray-200">
@@ -266,6 +299,52 @@ function ItemDetail() {
         )}
 
       </div>
+
+      {/* Delete Confirmation Modal */}
+      {showDeleteModal && (
+        <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/40 px-4 backdrop-blur-xs">
+          <div className="w-full max-w-md rounded-xl bg-white p-6 shadow-2xl ring-1 ring-black/5 animate-in fade-in zoom-in-95 duration-150">
+            <div className="flex items-center gap-3">
+              <div className="flex h-10 w-10 items-center justify-center rounded-full bg-red-100 text-red-600">
+                <Trash2 className="h-5 w-5" />
+              </div>
+              <div>
+                <h3 className="text-base font-semibold text-gray-900">Delete Item</h3>
+                <p className="text-xs text-gray-500">This action cannot be undone.</p>
+              </div>
+            </div>
+
+            <p className="mt-4 text-sm text-gray-600">
+              Are you sure you want to delete <span className="font-semibold text-gray-900">"{item.name}"</span>?
+            </p>
+
+            <div className="mt-6 flex items-center justify-end gap-3">
+              <button
+                type="button"
+                onClick={() => setShowDeleteModal(false)}
+                disabled={deleting}
+                className="rounded-lg border border-gray-300 px-4 py-2 text-sm font-medium text-gray-700 hover:bg-gray-50 transition disabled:opacity-50"
+              >
+                Cancel
+              </button>
+              <button
+                type="button"
+                onClick={handleDelete}
+                disabled={deleting}
+                className="flex items-center gap-2 rounded-lg bg-red-600 px-4 py-2 text-sm font-medium text-white hover:bg-red-700 transition disabled:opacity-50"
+              >
+                {deleting && (
+                  <svg className="h-4 w-4 animate-spin text-white" viewBox="0 0 24 24" fill="none">
+                    <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4" />
+                    <path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8v4l3-3-3-3v4a8 8 0 00-8 8h4z" />
+                  </svg>
+                )}
+                {deleting ? 'Deleting…' : 'Delete'}
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
     </div>
   )
 }

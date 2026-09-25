@@ -18,6 +18,11 @@ export const sidebarNavItems = [
       { name: 'Items', path: '/items' },
     ],
   },
+  { name: 'Inventory', icon: Package, path: '/items', hasSubmenu: true,
+      submenu: [
+      { name: 'Inventory adjustment', path: '' },
+    ],
+  },
   {
     name: 'Sales', icon: ShoppingCart, path: '/sales', hasSubmenu: true,
     submenu: [

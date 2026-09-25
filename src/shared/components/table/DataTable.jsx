@@ -24,6 +24,10 @@ function DataTable({
   onSelectAll,
   onSelectRow,
 
+  // Custom toolbars
+  toolbarLeft = null,
+  toolbarRight = null,
+
   // Table
   rowKey = 'id',
   maxHeight = 'calc(100vh - 160px)',
@@ -61,10 +65,12 @@ function DataTable({
               {title}
             </h2>
           )}
+          {toolbarLeft}
         </div>
 
         {/* Right actions */}
         <div className="flex items-center gap-2">
+          {toolbarRight}
 
           {showSearch && (
             <div className="relative hidden md:block">
