@@ -48,7 +48,7 @@ function Dropdown({ label, options, value, onChange }) {
   )
 }
 
-const TABS = ['Overview', 'Transactions', 'History']
+const TABS = ['Overview', 'Transactions', 'History', 'Inventory Adjustment']
 
 function ItemDetail() {
   const { id } = useParams()
@@ -171,7 +171,7 @@ function ItemDetail() {
         {TABS.map(tab => (
           <button
             key={tab}
-            onClick={() => setActiveTab(tab)}
+            onClick={() => tab === 'Inventory Adjustment' ? navigate('/inventory') : setActiveTab(tab)}
             className={`mr-6 pb-3 text-sm font-medium transition border-b-2 ${activeTab === tab
                 ? 'border-blue-600 text-blue-600'
                 : 'border-transparent text-gray-500 hover:text-gray-700'

@@ -40,6 +40,9 @@ import CreditNotes from '../modules/sales/credit-notes/pages/CreditNotes'
 import CreditNoteDetails from '../modules/sales/credit-notes/pages/CreditNoteDetails'
 import CreditNoteForm from '../modules/sales/credit-notes/pages/CreditNoteForm'
 import TimeTracking from '../modules/time-tracking/pages/TimeTracking'
+import Inventory from '../modules/inventory/pages/Inventory'
+import InventoryForm from '../modules/inventory/pages/InventoryForm'
+import InventoryDetails from '../modules/inventory/pages/InventoryDetails'
 import Login from '../auth/pages/Login'
 import Signup from '../auth/pages/Signup'
 
@@ -98,6 +101,10 @@ const router = createBrowserRouter([
           { path: 'sales/credit-notes/:id/edit',  element: <CreditNoteForm /> },
           { path: 'sales/credit-notes/:id',       element: <CreditNoteDetails /> },
           { path: 'time-tracking', element: <TimeTracking /> },
+          { path: 'inventory',           element: <Inventory /> },
+          { path: 'inventory/new',       element: <InventoryForm /> },
+          { path: 'inventory/:id/edit',  element: <InventoryForm /> },
+          { path: 'inventory/:id',       element: <InventoryDetails /> },
         ],
       },
     ],

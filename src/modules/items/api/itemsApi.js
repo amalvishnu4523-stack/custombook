@@ -1,7 +1,7 @@
 import axiosInstance from '../../../api/axiosInstance'
 import itemsEndpoints from './endpoints'
 
-// GET all items (accepts string filter or { filter, sort_by, sort_order } query params)
+// GET all items
 export const getItems = async (params = {}) => {
   let queryParams = {}
   if (typeof params === 'string') {
@@ -9,24 +9,34 @@ export const getItems = async (params = {}) => {
   } else if (params && typeof params === 'object') {
     queryParams = params
   }
-
-  const response = await axiosInstance.get(itemsEndpoints.list, {
-    params: queryParams,
-  })
+  const response = await axiosInstance.get(itemsEndpoints.list, { params: queryParams })
   return response.data
 }
 
-// GET item types / options
-export const getItemTypes = async () => {
-  const response = await axiosInstance.get(itemsEndpoints.itemTypes)
-  return response.data
-}
-export const getItemOptions = getItemTypes
-
-// GET single item
+// GET single item by item_id — unwraps results[0]
+// Falls back to filtering the full list if direct lookup returns empty
 export const getItemById = async (id) => {
-  const response = await axiosInstance.get(itemsEndpoints.detail(id))
-  return response.data
+  try {
+    const response = await axiosInstance.get(itemsEndpoints.detail(id))
+    const data = response.data
+    console.log('getItemById response:', data)
+
+    if (data.success && data.data?.results?.length > 0) {
+      return { success: true, data: data.data.results[0] }
+    }
+
+    // Fallback: fetch all items and find by item_id client-side
+    const allRes = await axiosInstance.get(itemsEndpoints.list)
+    const allData = allRes.data
+    if (allData.success && Array.isArray(allData.data?.results)) {
+      const found = allData.data.results.find(i => i.item_id === id)
+      if (found) return { success: true, data: found }
+    }
+
+    return { success: false, data: null }
+  } catch (err) {
+    throw err
+  }
 }
 
 // CREATE item
@@ -35,20 +45,14 @@ export const createItem = async (data) => {
   return response.data
 }
 
-// UPDATE item (PUT)
+// UPDATE item — PATCH with ?item_id= query param
 export const updateItem = async (id, data) => {
-  const response = await axiosInstance.put(itemsEndpoints.update(id), data)
+  const response = await axiosInstance.patch(itemsEndpoints.update(id), data)
   return response.data
 }
 
-// FULL REPLACE item (PUT)
-export const fullReplaceItem = updateItem
-
-// PATCH item (partial update)
-export const patchItem = async (id, data) => {
-  const response = await axiosInstance.patch(itemsEndpoints.patch(id), data)
-  return response.data
-}
+// PATCH item (alias)
+export const patchItem = updateItem
 
 // DELETE item
 export const deleteItem = async (id) => {
@@ -56,21 +60,11 @@ export const deleteItem = async (id) => {
   return response.data
 }
 
-// Direct Filter Helpers
-export const getAllItems = () => getItems('all_items')
-export const getActiveItems = () => getItems('active_items')
-export const getInactiveItems = () => getItems('inactive_items')
-export const getSalesItems = () => getItems('sales')
-export const getPurchaseItems = () => getItems('purchases')
-export const getServiceItems = () => getItems('services')
-export const getZohoCrmItems = () => getItems('zoho_crm')
-export const getInventoryItems = () => getItems('inventory_items')
-export const getNonInventoryItems = () => getItems('non_inventory_items')
-
-// Direct Sort Helpers
-export const getItemsSortedByName = (order = 'asc') =>
-  getItems({ sort_by: 'name', sort_order: order })
-export const getItemsSortedBySalesPrice = (order = 'asc') =>
-  getItems({ sort_by: 'sales_price', sort_order: order })
-export const getItemsSortedByPurchasePrice = (order = 'asc') =>
-  getItems({ sort_by: 'purchase_price', sort_order: order })
+// Filter helpers
+export const getAllItems         = () => getItems('all_items')
+export const getActiveItems      = () => getItems('active_items')
+export const getInactiveItems    = () => getItems('inactive_items')
+export const getSalesItems       = () => getItems('sales')
+export const getPurchaseItems    = () => getItems('purchases')
+export const getServiceItems     = () => getItems('services')
+export const getInventoryItems   = () => getItems('inventory_items')

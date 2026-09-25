@@ -1,6 +1,7 @@
 import {
   Home,
   Package,
+  Boxes,
   ShoppingCart,
   ShoppingBag,
   Clock,
@@ -18,9 +19,9 @@ export const sidebarNavItems = [
       { name: 'Items', path: '/items' },
     ],
   },
-  { name: 'Inventory', icon: Package, path: '/items', hasSubmenu: true,
-      submenu: [
-      { name: 'Inventory adjustment', path: '' },
+  { name: 'Inventory', icon: Boxes, path: '/inventory', hasSubmenu: true,
+    submenu: [
+      { name: 'Inventory adjustment', path: '/inventory' },
     ],
   },
   {
