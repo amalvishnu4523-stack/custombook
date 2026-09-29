@@ -12,7 +12,6 @@ function Login() {
 
   function handleChange(e) {
     setForm(prev => ({ ...prev, [e.target.name]: e.target.value }))
-    setError('')
   }
 
   function validate() {
@@ -119,13 +118,10 @@ function Login() {
 
             {/* Password */}
             <div>
-              <div className="mb-1.5 flex items-center justify-between">
+              <div className="mb-1.5 flex items-center">
                 <label htmlFor="password" className="text-sm font-medium text-gray-600">
                   Password
                 </label>
-                <a href="#" className="text-xs font-medium text-blue-600 hover:underline">
-                  Forgot password?
-                </a>
               </div>
               <div className="relative">
                 <Lock className="absolute left-3.5 top-1/2 h-4 w-4 -translate-y-1/2 text-gray-400" />
@@ -176,6 +172,12 @@ function Login() {
             <Link to="/signup" className="font-semibold text-blue-600 hover:underline">
               Create one
             </Link>
+          </p>
+
+          <p className="mt-3 text-center">
+            <a href="#" className="text-sm font-medium text-blue-600 hover:underline">
+              Forgot password?
+            </a>
           </p>
 
         </div>

@@ -1,6 +1,7 @@
 import { Search, SlidersHorizontal } from 'lucide-react'
 import Button from '../ui/Button'
 import EllipsisButton from '../ui/EllipsisButton'
+import TableMoreMenu from './TableMoreMenu'
 
 function DataTable({
   title = '',
@@ -17,6 +18,16 @@ function DataTable({
   onNew,
   onSearch,
   searchValue = '',
+
+  // More Menu Actions
+  onRefresh,
+  onSort,
+  onExport,
+  onImport,
+  onPreferences,
+  onResetColumnWidth,
+  currentSort = null,
+  moreMenuComponent = null,
 
   // Selection
   selectable = true,
@@ -50,7 +61,7 @@ function DataTable({
   }
 
   return (
-    <div className="flex w-full flex-col overflow-hidden rounded-lg border border-gray-200 bg-white">
+    <div className="relative flex w-full flex-col rounded-lg border border-gray-200 bg-white">
 
       {/* =========================
           TABLE HEADER / TOOLBAR
@@ -105,7 +116,18 @@ function DataTable({
           )}
 
           {showMore && (
-            <EllipsisButton />
+            moreMenuComponent || (
+              <TableMoreMenu
+                onRefresh={onRefresh}
+                onSort={onSort}
+                onExport={onExport}
+                onImport={onImport}
+                onPreferences={onPreferences}
+                onResetColumnWidth={onResetColumnWidth}
+                currentSort={currentSort}
+                entityName={title || 'Records'}
+              />
+            )
           )}
 
         </div>

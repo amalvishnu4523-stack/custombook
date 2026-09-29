@@ -1,5 +1,6 @@
 import { useState } from 'react'
-import { Settings, Plus, ChevronUp, ChevronDown, UserCircle } from 'lucide-react'
+import { Settings, Plus, ChevronUp, ChevronDown, UserCircle, Loader2 } from 'lucide-react'
+import { updatePortalStatus } from '../api/customersApi'
 
 /* ── tiny bar-chart (pure CSS) ── */
 const MONTHS = ['Mar 2026', 'Apr 2026', 'May 2026', 'Jun 2026', 'Jul 2026', 'Aug 2026', 'Sep 2026']
@@ -47,12 +48,31 @@ function Section({ title, defaultOpen = true, onAdd, children }) {
   )
 }
 
-function Overview({ customer }) {
+function Overview({ customer, onCustomerUpdate }) {
   const [incomePeriod, setIncomePeriod]   = useState('Last 6 Months')
   const [incomeMethod, setIncomeMethod]   = useState('Accrual')
+  const [portalLoading, setPortalLoading] = useState(false)
+  const [portalError, setPortalError]     = useState('')
 
   const maxIncome = Math.max(...INCOME_DATA, 1)
   const totalIncome = INCOME_DATA.reduce((a, b) => a + b, 0)
+
+  async function handleTogglePortal() {
+    const nextStatus = !customer.enablePortal
+    const customerId = customer.customer_id || customer.id
+    try {
+      setPortalLoading(true)
+      setPortalError('')
+      await updatePortalStatus(customerId, nextStatus)
+      onCustomerUpdate?.({ enablePortal: nextStatus })
+    } catch (err) {
+      console.error('Failed to update portal status:', err)
+      const msg = err.response?.data?.message || err.response?.data?.detail || 'Failed to update portal status'
+      setPortalError(msg)
+    } finally {
+      setPortalLoading(false)
+    }
+  }
 
   return (
     <div className="flex min-h-0 flex-1 gap-0 divide-x divide-gray-200">
@@ -72,7 +92,15 @@ function Overview({ customer }) {
                 <p className="text-sm font-medium text-gray-900">
                   {customer.salutation} {customer.firstName} {customer.lastName}
                 </p>
-                <button className="text-xs text-blue-600 hover:underline">Invite to Portal</button>
+                <button
+                  type="button"
+                  onClick={handleTogglePortal}
+                  disabled={portalLoading}
+                  className="flex items-center gap-1 text-xs text-blue-600 hover:underline cursor-pointer disabled:opacity-50"
+                >
+                  {portalLoading && <Loader2 className="h-3 w-3 animate-spin" />}
+                  {customer.enablePortal ? 'Disable Portal' : 'Invite / Enable Portal'}
+                </button>
               </div>
             </div>
             <Settings className="h-4 w-4 text-gray-400 cursor-pointer hover:text-gray-600" />
@@ -92,7 +120,7 @@ function Overview({ customer }) {
             <div>
               <p className="font-medium text-gray-700">Shipping Address</p>
               <p className="text-gray-400">
-                No Shipping Address{' '}
+                {customer.shippingAddress || 'No Shipping Address'}{' '}
                 <button className="text-blue-600 hover:underline">- New Address</button>
               </p>
             </div>
@@ -107,9 +135,24 @@ function Overview({ customer }) {
               { label: 'Default Currency',  value: customer.currency?.split('-')[0]?.trim() ?? 'INR' },
               {
                 label: 'Portal Status',
-                value: customer.enablePortal
-                  ? <span className="text-green-600 font-medium">● Enabled</span>
-                  : <span className="text-red-500 font-medium">● Disabled</span>,
+                value: (
+                  <div className="flex items-center gap-2">
+                    {customer.enablePortal ? (
+                      <span className="text-green-600 font-medium">● Enabled</span>
+                    ) : (
+                      <span className="text-red-500 font-medium">● Disabled</span>
+                    )}
+                    <button
+                      type="button"
+                      onClick={handleTogglePortal}
+                      disabled={portalLoading}
+                      className="rounded border border-gray-200 bg-gray-50 px-2 py-0.5 text-xs font-medium text-blue-600 hover:bg-blue-50 transition cursor-pointer disabled:opacity-50"
+                    >
+                      {portalLoading ? 'Updating...' : (customer.enablePortal ? 'Disable' : 'Enable')}
+                    </button>
+                    {portalError && <span className="text-xs text-red-500">{portalError}</span>}
+                  </div>
+                ),
               },
               { label: 'Customer Language', value: customer.language },
             ].map(({ label, value }) => (
@@ -123,7 +166,30 @@ function Overview({ customer }) {
 
         {/* CONTACT PERSONS */}
         <Section title="Contact Persons" onAdd={() => {}}>
-          <p className="text-sm text-gray-400">No contact persons found.</p>
+          {Array.isArray(customer.contact_persons) && customer.contact_persons.length > 0 ? (
+            <div className="space-y-3">
+              {customer.contact_persons.map((cp, idx) => {
+                const fullName = `${cp.salutation || ''} ${cp.first_name || ''} ${cp.last_name || ''}`.trim() || cp.name || cp.email || `Contact Person ${idx + 1}`
+                return (
+                  <div key={cp.contact_person_id || cp.id || idx} className="rounded-lg border border-gray-100 bg-gray-50/60 p-3 text-xs">
+                    <div className="flex items-center justify-between">
+                      <span className="font-semibold text-gray-800">{fullName}</span>
+                      {cp.designation && <span className="text-gray-500">{cp.designation}</span>}
+                    </div>
+                    {(cp.email || cp.work_phone || cp.mobile || cp.phone) && (
+                      <div className="mt-1 flex flex-wrap gap-x-4 gap-y-1 text-gray-600">
+                        {cp.email && <span>Email: {cp.email}</span>}
+                        {(cp.work_phone || cp.phone) && <span>Phone: {cp.work_phone || cp.phone}</span>}
+                        {cp.mobile && <span>Mobile: {cp.mobile}</span>}
+                      </div>
+                    )}
+                  </div>
+                )
+              })}
+            </div>
+          ) : (
+            <p className="text-sm text-gray-400">No contact persons found.</p>
+          )}
 
           {/* Portal promo card */}
           <div className="mt-4 rounded-lg border border-green-200 bg-green-50 p-3 text-xs text-gray-600">
@@ -134,8 +200,18 @@ function Overview({ customer }) {
                 <button className="text-blue-600 hover:underline">Learn More</button>
               </p>
             </div>
-            <button className="mt-3 rounded border border-gray-300 bg-white px-3 py-1.5 text-xs font-medium text-gray-700 hover:bg-gray-50 transition">
-              Enable Portal
+            <button
+              type="button"
+              onClick={handleTogglePortal}
+              disabled={portalLoading}
+              className={`mt-3 flex items-center gap-1.5 rounded border px-3 py-1.5 text-xs font-medium transition cursor-pointer disabled:opacity-50 ${
+                customer.enablePortal
+                  ? 'border-red-200 bg-white text-red-600 hover:bg-red-50'
+                  : 'border-gray-300 bg-white text-gray-700 hover:bg-gray-50'
+              }`}
+            >
+              {portalLoading && <Loader2 className="h-3 w-3 animate-spin" />}
+              {portalLoading ? 'Updating...' : (customer.enablePortal ? 'Disable Portal' : 'Enable Portal')}
             </button>
           </div>
         </Section>

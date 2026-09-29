@@ -5,13 +5,10 @@ const endpoints = {
     logout: "/auth/logout",
     refresh: "/auth/refresh",
   },
+  dashboard: {
+    businessoverview: "/api/dashboard/?period=this_fiscal_year",
+  },
+  customers: "/api/customers/",
+};
 
-    dashboard:{
-
-     businessoverview:"/api/dashboard/?period=this_fiscal_year"
-
-
-      }
-
-
-}
+export default endpoints;
